@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能优惠计算系统</title>
+    <style>
+        /* Base and Light Mode Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333; /* Default text color for light mode */
+            transition: background 0.5s, color 0.5s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: background 0.5s, box-shadow 0.5s;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            transition: color 0.5s, border-color 0.5s;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            transition: color 0.5s;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+            color: #333;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .voucher-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            transition: background 0.5s, border-left-color 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .voucher-item .voucher-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .voucher-item .voucher-title {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1em;
+            transition: color 0.5s;
+        }
+
+        .voucher-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .voucher-inputs input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-add {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #38a169;
+        }
+
+        .btn-delete {
+            background: #f56565;
+            color: white;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        .btn-delete:hover {
+            background: #e53e3e;
+        }
+
+        .btn-secondary {
+            background: #718096;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        .results-section {
+            grid-column: 1 / -1;
+        }
+
+        .result-item {
+            background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .result-item.best {
+            border-color: #48bb78;
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+            position: relative;
+        }
+
+        .result-item.best::before {
+            content: '🏆 最优方案';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2d3748;
+            transition: color 0.5s;
+        }
+
+        .result-price {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            transition: color 0.5s;
+        }
+
+        .result-item.best .result-price {
+            color: #48bb78;
+            transition: color 0.5s;
+        }
+
+        .result-details {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            transition: background 0.5s;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #e0e0e0;
+            transition: border-bottom-color 0.5s;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #718096;
+            transition: color 0.5s;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #2d3748;
+            transition: color 0.5s;
+        }
+
+        .savings-badge {
+            display: inline-block;
+            background: #fed7d7;
+            color: #c53030;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 10px;
+            transition: background 0.5s, color 0.5s;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .preset-btn {
+            padding: 8px 16px;
+            background: #edf2f7;
+            border: 2px solid #cbd5e0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .preset-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+            transition: color 0.5s;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .tip-box {
+            background: #fef5e7;
+            border-left: 4px solid #f39c12;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            transition: background 0.5s;
+        }
+
+        .tip-box strong {
+            color: #f39c12;
+        }
+
+        .advanced-options {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #e0e0e0;
+            transition: border-top-color 0.5s;
+        }
+
+        .comparison-chart {
+            margin-top: 20px;
+        }
+
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .chart-label {
+            width: 150px;
+            font-size: 14px;
+            color: #4a5568;
+            transition: color 0.5s;
+        }
+
+        .chart-bar-container {
+            flex: 1;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chart-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            color: #edf2f7;
+        }
+
+        body.dark-mode .card {
+            background: #2d3748;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        body.dark-mode .card h2 {
+            color: #9f7aea; /* Lighter shade of purple */
+            border-bottom-color: #9f7aea;
+        }
+        
+        body.dark-mode .card h3 {
+             color: #9f7aea !important;
+        }
+
+        body.dark-mode .input-group label {
+            color: #cbd5e0;
+        }
+
+        body.dark-mode .input-group input, body.dark-mode .input-group select {
+            background: #4a5568;
+            border-color: #4a5568;
+            color: #edf2f7;
+        }
+        
+        body.dark-mode .input-group input:focus, body.dark-mode .input-group select:focus {
+            border-color: #9f7aea;
+            box-shadow: 0 0 0 3px rgba(159, 122, 234, 0.2);
+        }
+
+        body.dark-mode .voucher-item {
+            background: #4a5568;
+            border-left-color: #9f7aea;
+        }
+        
+        body.dark-mode .voucher-item .voucher-title {
+            color: #9f7aea;
+        }
+
+        body.dark-mode .voucher-inputs input {
+            background: #2d3748;
+            border-color: #718096;
+            color: #edf2f7;
+        }
+
+        body.dark-mode .result-item {
+            background: #4a5568;
+            border-color: #4a5568;
+        }
+        
+        body.dark-mode .result-item:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .result-item.best {
+            border-color: #68d391;
+            background: linear-gradient(135deg, #2f453a 0%, #2f453a 100%);
+        }
+        
+        body.dark-mode .result-item.best::before {
+            background: #68d391;
+        }
+        
+        body.dark-mode .result-item.best .result-price {
+            color: #68d391;
+        }
+
+        body.dark-mode .result-title {
+            color: #edf2f7;
+        }
+
+        body.dark-mode .result-price {
+            color: #9f7aea;
+        }
+
+        body.dark-mode .result-details {
+            background: #2d3748;
+        }
+
+        body.dark-mode .detail-row {
+            border-bottom-color: #718096;
+        }
+
+        body.dark-mode .detail-label {
+            color: #cbd5e0;
+        }
+
+        body.dark-mode .detail-value {
+            color: #edf2f7;
+        }
+        
+        body.dark-mode .savings-badge {
+            background: #713838;
+            color: #f56565;
+        }
+        
+        body.dark-mode .tip-box {
+            background: #3a2e1d;
+            border-left-color: #f6ad55;
+        }
+        
+        body.dark-mode .tip-box strong {
+            color: #f6ad55;
+        }
+        
+        body.dark-mode .advanced-options {
+            border-top-color: #718096;
+        }
+        
+        body.dark-mode .chart-label {
+            color: #cbd5e0;
+        }
+        
+        body.dark-mode .preset-btn {
+            background: #4a5568;
+            border-color: #718096;
+            color: #edf2f7;
+        }
+        
+        body.dark-mode .preset-btn:hover {
+            background: #9f7aea;
+            border-color: #9f7aea;
+        }
+        
+        /* Mobile Adaptaion */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .voucher-inputs {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-label {
+                width: 100px; /* Smaller width for chart label on mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 智能优惠计算系统</h1>
+            <p>找到最省钱的付款方式，每一分都要精打细算！</p>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📝 基础信息</h2>
+                
+                <div class="input-group">
+                    <label>账单原价（元）</label>
+                    <input type="number" id="originalPrice" placeholder="例如：170" min="0" step="0.01">
+                </div>
+
+                <div class="toggle-switch">
+                    <label>深色模式</label>
+                    <label class="switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 小贴士：</strong>输入实际消费金额，系统会自动计算所有可能的优惠组合
+                </div>
+
+                <div class="advanced-options">
+                    <h3 style="margin-bottom: 15px; color: #667eea;">会员设置</h3>
+                    
+                    <div class="toggle-switch">
+                        <label>开启会员折扣</label>
+                        <label class="switch">
+                            <input type="checkbox" id="enableMember">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="input-group" id="memberDiscountGroup" style="display: none;">
+                        <label>会员折扣（折）</label>
+                        <input type="number" id="memberDiscount" placeholder="例如：9.5（表示95折）" min="0" max="10" step="0.1">
+                        <div class="preset-buttons">
+                            <button class="preset-btn" onclick="setDiscount(9.5)">95折</button>
+                            <button class="preset-btn" onclick="setDiscount(9)">9折</button>
+                            <button class="preset-btn" onclick="setDiscount(8.8)">88折</button>
+                            <button class="preset-btn" onclick="setDiscount(8.5)">85折</button>
+                            <button class="preset-btn" onclick="setDiscount(8)">8折</button>
+                        </div>
+                    </div>
+
+                    <div class="toggle-switch" style="margin-top: 15px;">
+                        <label>会员折扣与代金券可叠加</label>
+                        <label class="switch">
+                            <input type="checkbox" id="canStack">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="advanced-options">
+                    <h3 style="margin-bottom: 15px; color: #667eea;">代金券混合</h3>
+                    <div class="toggle-switch">
+                        <label>允许不同类型代金券混合使用</label>
+                        <label class="switch">
+                            <input type="checkbox" id="canMixVouchers">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="tip-box" id="voucherMixTip" style="display: none;">
+                        <strong>⚠️ 注意：</strong>关闭后，系统将只计算**单独使用某一种代金券**的方案。
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🎫 代金券配置</h2>
+                
+                <div id="vouchersList"></div>
+
+                <button class="btn btn-add" onclick="addVoucher()">+ 添加代金券</button>
+
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 10px; color: #667eea;">快速模板</h3>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="loadTemplate('美团')">美团常见</button>
+                        <button class="preset-btn" onclick="loadTemplate('大众点评')">大众点评</button>
+                        <button class="preset-btn" onclick="loadTemplate('自定义')">自定义套餐</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card results-section" id="resultsSection" style="display: none;">
+            <h2>📊 计算结果</h2>
+            
+            <div class="stats-grid" id="statsGrid"></div>
+            
+            <div class="comparison-chart" id="comparisonChart"></div>
+            
+            <div id="resultsList"></div>
+
+            <div class="export-buttons">
+                <button class="btn btn-secondary" onclick="copyResults()">📋 复制结果</button>
+                <button class="btn btn-secondary" onclick="shareResults()">🔗 分享方案</button>
+                <button class="btn btn-secondary" onclick="saveAsImage()">📷 保存为图片</button>
+            </div>
+        </div>
+        
+        <div id="emptyResultsState" class="card" style="display: block;">
+            <div class="empty-state">
+                <div class="empty-state-icon">🤔</div>
+                <p>请输入账单原价和代金券信息，系统将实时为您计算最优方案！</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let vouchers = [];
+        let voucherIdCounter = 0;
+
+        // --- Event Listeners and Initialization ---
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial placeholder values
+            document.getElementById('originalPrice').placeholder = '请输入需要付款的折扣前的原价';
+            document.getElementById('memberDiscount').placeholder = '例如：9.5（表示95折）';
+            
+            // Default: load a template to start with data
+            loadTemplate('自定义');
+            
+            // Initial render and calculation
+            renderVouchers();
+            updateCalculations();
+
+            // Set up all event listeners for real-time calculation
+            document.getElementById('originalPrice').addEventListener('input', updateCalculations);
+            document.getElementById('enableMember').addEventListener('change', function() {
+                document.getElementById('memberDiscountGroup').style.display = this.checked ? 'block' : 'none';
+                updateCalculations();
+            });
+            document.getElementById('memberDiscount').addEventListener('input', updateCalculations);
+            document.getElementById('canStack').addEventListener('change', updateCalculations);
+            document.getElementById('canMixVouchers').addEventListener('change', function() {
+                document.getElementById('voucherMixTip').style.display = this.checked ? 'none' : 'block';
+                updateCalculations();
+            });
+            
+            // Dark Mode Toggle
+            document.getElementById('darkModeToggle').addEventListener('change', function() {
+                document.body.classList.toggle('dark-mode', this.checked);
+            });
+            
+            // Set initial member discount state
+            document.getElementById('memberDiscountGroup').style.display = document.getElementById('enableMember').checked ? 'block' : 'none';
+            document.getElementById('voucherMixTip').style.display = document.getElementById('canMixVouchers').checked ? 'none' : 'block';
+        });
+
+        // --- Voucher Management ---
+
+        function addVoucher() {
+            const id = voucherIdCounter++;
+            vouchers.push({
+                id: id,
+                faceValue: 50,
+                cost: 40,
+                maxCount: 1
+            });
+            renderVouchers();
+            updateCalculations(); // Recalculate after adding
+        }
+
+        function deleteVoucher(id) {
+            vouchers = vouchers.filter(v => v.id !== id);
+            renderVouchers();
+            updateCalculations(); // Recalculate after deleting
+        }
+
+        function renderVouchers() {
+            const container = document.getElementById('vouchersList');
+            if (vouchers.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎫</div><p>还没有添加代金券，点击下方按钮添加</p></div>';
+                return;
+            }
+
+            container.innerHTML = vouchers.map(v => `
+                <div class="voucher-item">
+                    <div class="voucher-header">
+                        <span class="voucher-title">代金券 #${v.id + 1}</span>
+                        <button class="btn btn-delete" onclick="deleteVoucher(${v.id})">删除</button>
+                    </div>
+                    <div class="voucher-inputs">
+                        <div>
+                            <label style="font-size: 12px; color: #718096;">面额（元）</label>
+                            <input type="number" value="${v.faceValue}" min="0" step="0.01"
+                                onchange="updateVoucher(${v.id}, 'faceValue', this.value)">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #718096;">购买价（元）</label>
+                            <input type="number" value="${v.cost}" min="0" step="0.01"
+                                onchange="updateVoucher(${v.id}, 'cost', this.value)">
+                        </div>
+                    </div>
+                    <div class="voucher-inputs">
+                        <div>
+                            <label style="font-size: 12px; color: #718096;">最多使用（张）</label>
+                            <input type="number" value="${v.maxCount}" min="1"
+                                onchange="updateVoucher(${v.id}, 'maxCount', this.value)">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #718096;">折扣率</label>
+                            <input type="text" value="${v.faceValue > 0 ? ((v.cost / v.faceValue) * 10).toFixed(2) + '折' : 'N/A'}" disabled style="background: #f0f0f0;">
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add listeners to new inputs
+            container.querySelectorAll('input').forEach(input => {
+                // We only need to listen to onchange for voucher specific inputs, as the onchange in map handles the updateVoucher and triggers updateCalculations
+            });
+        }
+
+        function updateVoucher(id, field, value) {
+            const voucher = vouchers.find(v => v.id === id);
+            if (voucher) {
+                voucher[field] = parseFloat(value) || 0;
+                renderVouchers(); // Re-render to update discount rate
+                updateCalculations(); // Recalculate after updating voucher data
+            }
+        }
+
+        function setDiscount(value) {
+            document.getElementById('memberDiscount').value = value;
+            updateCalculations(); // Recalculate after setting discount
+        }
+
+        function loadTemplate(type) {
+            vouchers = [];
+            voucherIdCounter = 0;
+
+            if (type === '美团') {
+                vouchers = [
+                    { id: voucherIdCounter++, faceValue: 50, cost: 40, maxCount: 2 },
+                    { id: voucherIdCounter++, faceValue: 100, cost: 85, maxCount: 1 },
+                    { id: voucherIdCounter++, faceValue: 200, cost: 175, maxCount: 1 }
+                ];
+            } else if (type === '大众点评') {
+                vouchers = [
+                    { id: voucherIdCounter++, faceValue: 30, cost: 25, maxCount: 3 },
+                    { id: voucherIdCounter++, faceValue: 80, cost: 68, maxCount: 1 }
+                ];
+            } else { // '自定义' or default
+                vouchers = [
+                    { id: voucherIdCounter++, faceValue: 50, cost: 40, maxCount: 1 }
+                ];
+            }
+
+            renderVouchers();
+            updateCalculations(); // Recalculate after loading template
+        }
+
+        // --- Core Calculation ---
+
+        function updateCalculations() {
+            const originalPrice = parseFloat(document.getElementById('originalPrice').value) || 0;
+            
+            // Check for valid input
+            if (originalPrice <= 0 || vouchers.length === 0) {
+                document.getElementById('resultsSection').style.display = 'none';
+                document.getElementById('emptyResultsState').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('emptyResultsState').style.display = 'none';
+
+            const enableMember = document.getElementById('enableMember').checked;
+            const memberDiscount = parseFloat(document.getElementById('memberDiscount').value) || 10;
+            const canStack = document.getElementById('canStack').checked;
+            const canMixVouchers = document.getElementById('canMixVouchers').checked;
+
+            let results = [];
+            
+            // Scheme 1: Original Price
+            results.push({
+                type: '原价支付',
+                finalPrice: originalPrice,
+                savings: 0,
+                details: {
+                    '原价': originalPrice,
+                    '实付': originalPrice
+                }
+            });
+
+            // Scheme 2: Only Member Discount
+            if (enableMember) {
+                const memberPrice = originalPrice * (memberDiscount / 10);
+                results.push({
+                    type: '会员折扣',
+                    finalPrice: memberPrice,
+                    savings: originalPrice - memberPrice,
+                    details: {
+                        '原价': originalPrice,
+                        '会员折扣': memberDiscount + '折',
+                        '实付': memberPrice
+                    }
+                });
+            }
+
+            // Scheme 3: Voucher Combinations (with/without stacking member discount)
+            generateVoucherCombinations(vouchers, originalPrice, results, enableMember, memberDiscount, canStack, canMixVouchers);
+            
+            // Sort and display
+            results.sort((a, b) => a.finalPrice - b.finalPrice);
+            displayResults(results, originalPrice);
+        }
+        
+        // Generate Voucher Combinations
+        function generateVoucherCombinations(vouchers, originalPrice, results, enableMember, memberDiscount, canStack, canMixVouchers) {
+            
+            function generateCombos(index, currentCombo) {
+                if (index === vouchers.length) {
+                    if (currentCombo.some(count => count > 0)) {
+                        
+                        // Check for mixed usage restriction
+                        if (!canMixVouchers) {
+                            const voucherTypesUsed = currentCombo.filter(count => count > 0).length;
+                            if (voucherTypesUsed > 1) {
+                                return; // Skip mixed voucher combinations
+                            }
+                        }
+                        
+                        // Scenario: Vouchers only
+                        calculateVoucherPlan(currentCombo, false);
+                        
+                        // Scenario: Vouchers + Stacked Member Discount
+                        if (enableMember && canStack) {
+                            calculateVoucherPlan(currentCombo, true);
+                        }
+                    }
+                    return;
+                }
+
+                for (let count = 0; count <= vouchers[index].maxCount; count++) {
+                    currentCombo[index] = count;
+                    generateCombos(index + 1, [...currentCombo]);
+                }
+            }
+
+            function calculateVoucherPlan(combo, useMember) {
+                let totalVoucherValue = 0;
+                let totalVoucherCost = 0;
+                let voucherDetails = [];
+
+                combo.forEach((count, index) => {
+                    if (count > 0) {
+                        const voucher = vouchers[index];
+                        totalVoucherValue += voucher.faceValue * count;
+                        totalVoucherCost += voucher.cost * count;
+                        voucherDetails.push(`${count}张${voucher.faceValue}元券（${voucher.cost}元/张）`);
+                    }
+                });
+
+                // Calculate remaining price after voucher value deduction
+                let remainingPrice = Math.max(0, originalPrice - totalVoucherValue);
+
+                // Apply member discount on remaining price if stacking is enabled and used
+                if (useMember) {
+                    remainingPrice = remainingPrice * (memberDiscount / 10);
+                }
+
+                let finalPrice = totalVoucherCost + remainingPrice;
+                let details = {
+                    '原价': originalPrice,
+                    '代金券购买成本': totalVoucherCost,
+                    '代金券面额': totalVoucherValue,
+                    '需补差价': remainingPrice
+                };
+
+                if (useMember) {
+                    details['会员折扣'] = memberDiscount + '折（应用于差价）';
+                }
+
+                details['实付'] = finalPrice;
+                results.push({
+                    type: voucherDetails.join(' + ') + (useMember ? ' + 会员折扣' : ''),
+                    finalPrice: finalPrice,
+                    savings: originalPrice - finalPrice,
+                    details: details,
+                    voucherCount: combo.reduce((a, b) => a + b, 0)
+                });
+            }
+
+            generateCombos(0, []);
+        }
+
+        // --- Display and Export ---
+
+        function displayResults(results, originalPrice) {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsList = document.getElementById('resultsList');
+            const statsGrid = document.getElementById('statsGrid');
+            const comparisonChart = document.getElementById('comparisonChart');
+
+            resultsSection.style.display = 'block';
+
+            // Stats
+            const bestSavings = results[0].savings;
+            const worstPrice = results[results.length - 1].finalPrice;
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">¥${results[0].finalPrice.toFixed(2)}</div>
+                    <div class="stat-label">最低支付</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">¥${bestSavings.toFixed(2)}</div>
+                    <div class="stat-label">最多节省</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${results.length}</div>
+                    <div class="stat-label">方案总数</div>
+                </div>
+            `;
+
+            // Results List
+            resultsList.innerHTML = results.map((result, index) => `
+                <div class="result-item ${index === 0 ? 'best' : ''}">
+                    <div class="result-header">
+                        <div class="result-title">
+                            ${result.type}
+                            ${result.savings > 0 ? `<span class="savings-badge">省¥${result.savings.toFixed(2)}</span>` : ''}
+                        </div>
+                        <div class="result-price">¥${result.finalPrice.toFixed(2)}</div>
+                    </div>
+                    <div class="result-details">
+                        ${Object.entries(result.details).map(([key, value]) => `
+                            <div class="detail-row">
+                                <span class="detail-label">${key}</span>
+                                <span class="detail-value">${typeof value === 'number' ? '¥' + value.toFixed(2) : value}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            // Comparison Chart (Top 5)
+            const topResults = results.slice(0, 5);
+            // Use original price as the maximum price for comparison to better visualize savings
+            const maxPrice = Math.max(originalPrice, worstPrice); 
+
+            comparisonChart.innerHTML = `
+                <h3 style="margin-bottom: 15px; color: #667eea;">💹 前5方案价格对比</h3>
+                ${topResults.map((result, index) => `
+                    <div class="chart-bar">
+                        <div class="chart-label">方案${index + 1}</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar-fill" style="width: ${(result.finalPrice / maxPrice * 100)}%">
+                                ¥${result.finalPrice.toFixed(2)}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+            
+            // Scroll to results on first display or if user hasn't scrolled away
+            if (resultsSection.style.display === 'block') {
+                // resultsSection.scrollIntoView({ behavior: 'smooth' }); // Removed for better real-time experience
+            }
+        }
+
+        // Export/Share functions (unchanged)
+        function copyResults() {
+            const resultsList = document.getElementById('resultsList');
+            const text = Array.from(resultsList.children).map((item, index) => {
+                const title = item.querySelector('.result-title').textContent.trim();
+                const price = item.querySelector('.result-price').textContent.trim();
+                return `方案${index + 1}: ${title} - ${price}`;
+            }).join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ 结果已复制到剪贴板！');
+            });
+        }
+
+        function shareResults() {
+            const originalPrice = document.getElementById('originalPrice').value;
+            const bestPrice = document.querySelector('.result-item.best .result-price').textContent.trim();
+            const text = `我在用智能优惠计算系统！原价¥${originalPrice}，最优方案只需${bestPrice}，快来试试吧！`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '智能优惠计算系统',
+                    text: text
+                });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('✅ 分享文案已复制到剪贴板！');
+            }
+        }
+
+        function saveAsImage() {
+            alert('💡 提示：您可以使用浏览器的截图功能或按 Ctrl+P 打印为PDF保存结果！');
+        }
+    </script>
+</body>
+</html>
