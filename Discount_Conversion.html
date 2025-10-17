@@ -134,6 +134,27 @@
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
+        
+        /* 新增：复选框样式 */
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin: 0;
+        }
+        
+        .checkbox-item label {
+            margin: 0;
+            font-size: 1em;
+            color: #333;
+        }
 
         .result-panel {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -261,105 +282,127 @@
         <div class="main-card">
             <div class="form-group">
                 <label for="discountType">选择优惠类型</label>
+  
                 <select id="discountType">
                     <option value="">请选择优惠类型...</option>
                     <option value="buyGetFree">买M送N（买一送一、买二送一等）</option>
                     <option value="recharge">充值返现/储值送（充1000送200等）</option>
                     <option value="nthDiscount">第N件打折（第二件半价、第三件免费等）</option>
+ 
                     <option value="fullReduction">满减优惠（满100减20等）</option>
                     <option value="fullDiscount">满额打折（满500打8折等）</option>
                     <option value="fullQuantityDiscount">满件折扣（满3件打8折等）</option>
                     <option value="directDiscount">直接折扣（8折、9折等）</option>
+                 
                     <option value="tieredDiscount">阶梯折扣（买越多折扣越大）</option>
                     <option value="bundlePrice">组合定价（任选N件M元）</option>
                     <option value="extraPurchase">加价购/换购（满100加10元换购）</option>
                     <option value="percentOff">百分比优惠（立减30%等）</option>
                     <option value="memberMultiplier">会员积分倍数（双倍积分、三倍积分）</option>
-                </select>
+            
+                 </select>
             </div>
 
-            <!-- 买M送N -->
             <div id="panel-buyGetFree" class="input-panel">
                 <div class="input-row">
                     <div class="input-item">
+                  
                         <label>买几件（M）</label>
                         <input type="number" id="buyQuantity" min="1" value="1" placeholder="例如：2">
                     </div>
                     <div class="input-item">
+                        
                         <label>送几件（N）</label>
                         <input type="number" id="freeQuantity" min="1" value="1" placeholder="例如：1">
                     </div>
                 </div>
                 <div class="tip-box">
+                  
                     💡 例如：买2送1，相当于买3件商品只需付2件的钱
                 </div>
             </div>
 
-            <!-- 充值返现 -->
             <div id="panel-recharge" class="input-panel">
                 <div class="input-row">
                     <div class="input-item">
+   
                         <label>充值金额</label>
                         <input type="number" id="rechargeAmount" min="0" value="1000" placeholder="例如：1000">
                     </div>
                     <div class="input-item">
+         
                         <label>赠送金额</label>
                         <input type="number" id="giftAmount" min="0" value="200" placeholder="例如：200">
                     </div>
                 </div>
                 <div class="tip-box">
+   
                     💡 例如：充1000送200，相当于实际消费1200元只需支付1000元
                 </div>
             </div>
 
-            <!-- 第N件打折 -->
             <div id="panel-nthDiscount" class="input-panel">
                 <div class="input-row">
+         
                     <div class="input-item">
-                        <label>第几件开始优惠</label>
+                        <label>第几件开始优惠（M）</label>
                         <input type="number" id="nthItem" min="1" value="2" placeholder="例如：2">
                     </div>
+               
                     <div class="input-item">
                         <label>优惠折扣（填折扣数，0表示免费）</label>
                         <input type="number" id="nthDiscountRate" min="0" max="10" step="0.1" value="5" placeholder="例如：5表示5折，0表示免费">
                     </div>
+                   
                     <div class="input-item">
                         <label>购买总件数</label>
                         <input type="number" id="totalItems" min="1" value="2" placeholder="例如：3">
                     </div>
                 </div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" id="independentNth">
+                    <label for="independentNth">独立计算（例如：每2件第2件半价，第3件原价，第4件半价）</label>
+                </div>
+         
                 <div class="tip-box">
-                    💡 例如：第2件半价，买3件商品时，第2、3件都是半价
+                    💡 **模式说明:**
+                    <br/>* **不勾选:** 从第M件开始，后续所有商品均享受折扣。例如：第2件半价，买3件商品时，第2、3件都是半价。
+                    <br/>* **勾选:** 仅周期性的第M件享受折扣。例如：买2件第2件半价，买3件时第2件半价，第3件原价。买4件时第2、4件半价，第1、3件原价。
                 </div>
             </div>
 
-            <!-- 满减优惠 -->
             <div id="panel-fullReduction" class="input-panel">
+               
                 <div class="input-row">
                     <div class="input-item">
                         <label>满多少元</label>
                         <input type="number" id="fullAmount" min="0" value="100" placeholder="例如：100">
                     </div>
+    
                     <div class="input-item">
                         <label>减多少元</label>
                         <input type="number" id="reductionAmount" min="0" value="20" placeholder="例如：20">
                     </div>
+          
                 </div>
                 <div class="tip-box">
                     💡 例如：满100减20，相当于购买100元商品只需付80元
                 </div>
             </div>
 
-            <!-- 满额打折 -->
-            <div id="panel-fullDiscount" class="input-panel">
+            <div id="panel-fullDiscount" 
+                class="input-panel">
                 <div class="input-row">
                     <div class="input-item">
                         <label>满多少元</label>
                         <input type="number" id="fullAmountForDiscount" min="0" value="500" placeholder="例如：500">
+         
                     </div>
                     <div class="input-item">
                         <label>打几折</label>
                         <input type="number" id="discountRate" min="0" max="10" step="0.1" value="8" placeholder="例如：8">
+             
                     </div>
                 </div>
                 <div class="tip-box">
@@ -367,177 +410,202 @@
                 </div>
             </div>
 
-            <!-- 满件折扣 -->
+           
             <div id="panel-fullQuantityDiscount" class="input-panel">
                 <div class="input-row">
                     <div class="input-item">
                         <label>满几件</label>
+                     
                         <input type="number" id="fullQuantity" min="1" value="3" placeholder="例如：3">
                     </div>
                     <div class="input-item">
                         <label>打几折</label>
-                        <input type="number" id="quantityDiscountRate" min="0" max="10" step="0.1" value="8" placeholder="例如：8">
+                        <input type="number" id="quantityDiscountRate" 
+                            min="0" max="10" step="0.1" value="8" placeholder="例如：8">
                     </div>
                     <div class="input-item">
                         <label>单价（元）</label>
                         <input type="number" id="unitPrice" min="0" value="100" placeholder="例如：100">
+  
                     </div>
                 </div>
                 <div class="tip-box">
                     💡 例如：满3件打8折，每件100元，买3件实付240元
                 </div>
+            
             </div>
 
-            <!-- 直接折扣 -->
             <div id="panel-directDiscount" class="input-panel">
                 <div class="input-row">
                     <div class="input-item">
                         <label>折扣（几折）</label>
+          
                         <input type="number" id="directDiscountValue" min="0" max="10" step="0.1" value="8" placeholder="例如：8.5">
                     </div>
                 </div>
                 <div class="tip-box">
                     💡 例如：8折优惠，相当于支付原价的80%
+     
                 </div>
             </div>
 
-            <!-- 阶梯折扣 -->
             <div id="panel-tieredDiscount" class="input-panel">
                 <div class="input-row">
                     <div class="input-item">
+           
                         <label>第1档数量</label>
                         <input type="number" id="tier1Qty" min="1" value="1" placeholder="例如：1">
                     </div>
                     <div class="input-item">
+                 
                         <label>第1档折扣</label>
                         <input type="number" id="tier1Discount" min="0" max="10" step="0.1" value="10" placeholder="例如：10">
                     </div>
                 </div>
                 <div class="input-row">
+         
                     <div class="input-item">
                         <label>第2档数量</label>
                         <input type="number" id="tier2Qty" min="1" value="3" placeholder="例如：3">
                     </div>
+               
                     <div class="input-item">
                         <label>第2档折扣</label>
                         <input type="number" id="tier2Discount" min="0" max="10" step="0.1" value="9" placeholder="例如：9">
                     </div>
                 </div>
+   
                 <div class="input-row">
                     <div class="input-item">
                         <label>第3档数量</label>
                         <input type="number" id="tier3Qty" min="1" value="5" placeholder="例如：5">
+            
                     </div>
                     <div class="input-item">
                         <label>第3档折扣</label>
                         <input type="number" id="tier3Discount" min="0" max="10" step="0.1" value="8" placeholder="例如：8">
+                
                     </div>
                 </div>
                 <div class="input-row">
                     <div class="input-item">
                         <label>单价（元）</label>
+                  
                         <input type="number" id="tieredUnitPrice" min="0" value="100" placeholder="例如：100">
                     </div>
                     <div class="input-item">
                         <label>购买数量</label>
+                        
                         <input type="number" id="purchaseQty" min="1" value="5" placeholder="例如：5">
                     </div>
                 </div>
                 <div class="tip-box">
                     💡 例如：买1-2件原价，买3-4件9折，买5件及以上8折
                 </div>
+     
             </div>
 
-            <!-- 组合定价 -->
             <div id="panel-bundlePrice" class="input-panel">
                 <div class="input-row">
                     <div class="input-item">
                         <label>任选几件</label>
+   
                         <input type="number" id="bundleQuantity" min="1" value="3" placeholder="例如：3">
                     </div>
                     <div class="input-item">
                         <label>总价（元）</label>
+         
                         <input type="number" id="bundleTotalPrice" min="0" value="100" placeholder="例如：100">
                     </div>
                     <div class="input-item">
                         <label>单品原价（元）</label>
+               
                         <input type="number" id="bundleOriginalPrice" min="0" value="50" placeholder="例如：50">
                     </div>
                 </div>
                 <div class="tip-box">
                     💡 例如：任选3件100元，原价每件50元，相当于6.67折
+            
                 </div>
             </div>
 
-            <!-- 加价购 -->
             <div id="panel-extraPurchase" class="input-panel">
                 <div class="input-row">
                     <div class="input-item">
+                  
                         <label>消费门槛（元）</label>
                         <input type="number" id="extraThreshold" min="0" value="100" placeholder="例如：100">
                     </div>
                     <div class="input-item">
+                        
                         <label>加价金额（元）</label>
                         <input type="number" id="extraPrice" min="0" value="10" placeholder="例如：10">
                     </div>
                     <div class="input-item">
                         <label>换购商品原价（元）</label>
+      
                         <input type="number" id="extraOriginalPrice" min="0" value="50" placeholder="例如：50">
                     </div>
                 </div>
                 <div class="tip-box">
                     💡 例如：满100元加10元换购价值50元商品，换购商品相当于2折
+   
                 </div>
             </div>
 
-            <!-- 百分比优惠 -->
             <div id="panel-percentOff" class="input-panel">
                 <div class="input-row">
                     <div class="input-item">
+         
                         <label>优惠百分比（%）</label>
                         <input type="number" id="percentValue" min="0" max="100" step="1" value="30" placeholder="例如：30">
                     </div>
                 </div>
                 <div class="tip-box">
+ 
                     💡 例如：立减30%，相当于7折优惠
                 </div>
             </div>
 
-            <!-- 会员积分倍数 -->
             <div id="panel-memberMultiplier" class="input-panel">
                 <div class="input-row">
+       
                     <div class="input-item">
                         <label>积分倍数</label>
                         <input type="number" id="multiplierValue" min="1" step="1" value="2" placeholder="例如：2">
                     </div>
+            
                     <div class="input-item">
                         <label>积分价值比例（%）</label>
                         <input type="number" id="pointValueRate" min="0" max="100" step="0.1" value="1" placeholder="例如：1表示100积分=1元">
                     </div>
+                
                 </div>
                 <div class="tip-box">
                     💡 例如：双倍积分，若积分价值为1%，相当于额外获得1%返利
                 </div>
             </div>
 
-            <!-- 结果展示 -->
             <div id="resultPanel" class="result-panel">
+      
                 <div class="result-label">相当于折扣</div>
                 <div class="result-value" id="resultDiscount">-</div>
                 <div class="result-detail" id="resultDetail">请选择优惠类型并填写参数</div>
             </div>
 
-            <!-- 使用示例 -->
             <div class="discount-examples">
+              
                 <h3>💼 全球常见优惠类型示例</h3>
                 <div class="example-tags">
                     <span class="example-tag">🇨🇳 满减（中国常见）</span>
                     <span class="example-tag">🇺🇸 Buy One Get One (BOGO)</span>
                     <span class="example-tag">🇯🇵 第二件半价</span>
+          
                     <span class="example-tag">🇰🇷 充值返利</span>
                     <span class="example-tag">🇬🇧 3 for 2 (买3付2)</span>
                     <span class="example-tag">🇩🇪 阶梯折扣</span>
                     <span class="example-tag">🇫🇷 会员专享折扣</span>
+                   
                     <span class="example-tag">🇦🇺 满额打折</span>
                     <span class="example-tag">🇨🇦 Bundle Deal（组合优惠）</span>
                     <span class="example-tag">🌍 Black Friday（黑五折扣）</span>
@@ -547,11 +615,16 @@
     </div>
 
     <script>
+       
         // 获取DOM元素
         const discountType = document.getElementById('discountType');
         const resultPanel = document.getElementById('resultPanel');
         const resultDiscount = document.getElementById('resultDiscount');
         const resultDetail = document.getElementById('resultDetail');
+        
+        // 新增：独立计算模式的复选框
+        const independentNthCheckbox = document.getElementById('independentNth');
+
 
         // 所有输入面板
         const panels = {
@@ -561,6 +634,7 @@
             'fullReduction': document.getElementById('panel-fullReduction'),
             'fullDiscount': document.getElementById('panel-fullDiscount'),
             'fullQuantityDiscount': document.getElementById('panel-fullQuantityDiscount'),
+  
             'directDiscount': document.getElementById('panel-directDiscount'),
             'tieredDiscount': document.getElementById('panel-tieredDiscount'),
             'bundlePrice': document.getElementById('panel-bundlePrice'),
@@ -568,7 +642,6 @@
             'percentOff': document.getElementById('panel-percentOff'),
             'memberMultiplier': document.getElementById('panel-memberMultiplier')
         };
-
         // 监听类型选择
         discountType.addEventListener('change', function() {
             // 隐藏所有面板
@@ -578,6 +651,7 @@
 
             // 显示选中的面板
             const selectedType = this.value;
+    
             if (selectedType && panels[selectedType]) {
                 panels[selectedType].classList.add('active');
                 calculateDiscount();
@@ -585,12 +659,15 @@
                 resultPanel.classList.remove('active');
             }
         });
-
-        // 为所有输入框添加实时监听
+        // 为所有输入框和新的复选框添加实时监听
         document.querySelectorAll('input[type="number"]').forEach(input => {
             input.addEventListener('input', calculateDiscount);
         });
-
+        
+        if (independentNthCheckbox) {
+            independentNthCheckbox.addEventListener('change', calculateDiscount);
+        }
+        
         // 计算折扣
         function calculateDiscount() {
             const type = discountType.value;
@@ -598,7 +675,6 @@
 
             let discount = 0;
             let detail = '';
-
             try {
                 switch(type) {
                     case 'buyGetFree':
@@ -653,14 +729,13 @@
 
         // 买M送N
         function calculateBuyGetFree() {
-            const buy = parseFloat(document.getElementById('buyQuantity').value) || 0;
+            const buy = parseFloat(document.getElementById('buyQuantity').value) ||
+                0;
             const free = parseFloat(document.getElementById('freeQuantity').value) || 0;
             
             if (buy <= 0) return { value: null, detail: '请输入有效的购买数量' };
-            
             const total = buy + free;
             const discount = (buy / total) * 10;
-            
             return {
                 value: discount,
                 detail: `买${buy}送${free}，相当于买${total}件只需付${buy}件的钱<br>实际支付：${((discount/10)*100).toFixed(1)}%`
@@ -669,46 +744,88 @@
 
         // 充值返现
         function calculateRecharge() {
-            const recharge = parseFloat(document.getElementById('rechargeAmount').value) || 0;
+            const recharge = parseFloat(document.getElementById('rechargeAmount').value) ||
+                0;
             const gift = parseFloat(document.getElementById('giftAmount').value) || 0;
             
             if (recharge <= 0) return { value: null, detail: '请输入有效的充值金额' };
-            
             const total = recharge + gift;
             const discount = (recharge / total) * 10;
-            
             return {
                 value: discount,
                 detail: `充${recharge}元送${gift}元，实际可消费${total}元<br>实际支付：${((discount/10)*100).toFixed(1)}%`
             };
         }
 
-        // 第N件打折
+        // 第N件打折 (已修改)
         function calculateNthDiscount() {
-            const nth = parseFloat(document.getElementById('nthItem').value) || 0;
+            const nth = parseFloat(document.getElementById('nthItem').value) ||
+                0;
             const rate = parseFloat(document.getElementById('nthDiscountRate').value);
             const total = parseFloat(document.getElementById('totalItems').value) || 0;
+            const independent = document.getElementById('independentNth').checked; // 获取新复选框状态
             
             if (nth <= 0 || total <= 0 || nth > total) {
                 return { value: null, detail: '请输入有效的参数' };
             }
             
-            // 计算总价
-            let totalPrice = nth - 1; // 前面正价的件数
-            let discountItems = total - nth + 1; // 打折的件数
-            totalPrice += discountItems * (rate / 10);
-            
-            const discount = (totalPrice / total) * 10;
-            
-            return {
-                value: discount,
-                detail: `第${nth}件${rate === 0 ? '免费' : rate + '折'}，买${total}件<br>前${nth-1}件原价，后${discountItems}件${rate === 0 ? '免费' : rate + '折'}<br>平均折扣：${discount.toFixed(2)}折`
-            };
+            let totalPriceItems = 0; // 等效于原价商品的件数
+            let discountedItems = 0; // 享受折扣的件数
+            const rateFactor = rate / 10; // 折扣因子
+            const originalItems = total; // 购买总件数
+
+            if (independent) {
+                // 独立计算模式 (每 M 件周期性计算)
+                // M = nth, 但实际周期是 n-1 件原价 + 1 件折扣
+                const cycleLength = nth; 
+                let actualDiscountedCount = 0; 
+                
+                // 循环计算每一件商品
+                for (let i = 1; i <= total; i++) {
+                    // 第 nth 件、第 2*nth 件、第 3*nth 件... 享受折扣
+                    if (i % cycleLength === 0) {
+                        totalPriceItems += rateFactor;
+                        actualDiscountedCount++;
+                    } else {
+                        totalPriceItems += 1; // 原价
+                    }
+                }
+                
+                discountedItems = actualDiscountedCount;
+                
+                let detail = `第${nth}件${rate === 0 ? '免费' : rate + '折'}（独立计算），共买${total}件<br>`;
+                detail += `享受折扣件数：${discountedItems}件，原价件数：${originalItems - discountedItems}件<br>`;
+                const discount = (totalPriceItems / total) * 10;
+                detail += `平均折扣：${discount.toFixed(2)}折`;
+                
+                return { value: discount, detail: detail };
+                
+            } else {
+                // 原有逻辑：从第 N 件开始，所有后续商品均打折
+                
+                // 前面原价的件数 (N-1)
+                totalPriceItems = nth - 1; 
+                
+                // 打折的件数
+                discountedItems = total - nth + 1; 
+                
+                // 加上打折件数的等效原价
+                totalPriceItems += discountedItems * rateFactor;
+                
+                const discount = (totalPriceItems / total) * 10;
+                
+                const detail = `第${nth}件${rate === 0 ? '免费' : rate + '折'}（连续计算），共买${total}件<br>
+                                前${nth-1}件原价，后${discountedItems}件${rate === 0 ? '免费' : rate + '折'}<br>
+                                平均折扣：${discount.toFixed(2)}折`;
+                
+                return { value: discount, detail: detail };
+            }
         }
 
         // 满减优惠
         function calculateFullReduction() {
-            const full = parseFloat(document.getElementById('fullAmount').value) || 0;
+            const full = parseFloat(document.getElementById('fullAmount').value) ||
+                0;
             const reduction = parseFloat(document.getElementById('reductionAmount').value) || 0;
             
             if (full <= 0 || reduction < 0) {
@@ -726,7 +843,8 @@
 
         // 满额打折
         function calculateFullDiscount() {
-            const full = parseFloat(document.getElementById('fullAmountForDiscount').value) || 0;
+            const full = parseFloat(document.getElementById('fullAmountForDiscount').value) ||
+                0;
             const rate = parseFloat(document.getElementById('discountRate').value);
             
             if (full <= 0 || rate < 0) {
@@ -734,7 +852,6 @@
             }
             
             const actualPay = full * (rate / 10);
-            
             return {
                 value: rate,
                 detail: `满${full}元打${rate}折<br>实际支付：${actualPay.toFixed(2)}元<br>节省：${(full - actualPay).toFixed(2)}元`
@@ -743,10 +860,10 @@
 
         // 满件折扣
         function calculateFullQuantityDiscount() {
-            const qty = parseFloat(document.getElementById('fullQuantity').value) || 0;
+            const qty = parseFloat(document.getElementById('fullQuantity').value) ||
+                0;
             const rate = parseFloat(document.getElementById('quantityDiscountRate').value);
             const price = parseFloat(document.getElementById('unitPrice').value) || 0;
-            
             if (qty <= 0 || price <= 0) {
                 return { value: null, detail: '请输入有效的参数' };
             }
@@ -763,7 +880,6 @@
         // 直接折扣
         function calculateDirectDiscount() {
             const rate = parseFloat(document.getElementById('directDiscountValue').value);
-            
             if (rate < 0 || rate > 10) {
                 return { value: null, detail: '请输入0-10之间的折扣' };
             }
@@ -776,7 +892,8 @@
 
         // 阶梯折扣
         function calculateTieredDiscount() {
-            const tier1Qty = parseFloat(document.getElementById('tier1Qty').value) || 0;
+            const tier1Qty = parseFloat(document.getElementById('tier1Qty').value) ||
+                0;
             const tier1Disc = parseFloat(document.getElementById('tier1Discount').value) || 10;
             const tier2Qty = parseFloat(document.getElementById('tier2Qty').value) || 0;
             const tier2Disc = parseFloat(document.getElementById('tier2Discount').value) || 10;
@@ -807,10 +924,10 @@
 
         // 组合定价
         function calculateBundlePrice() {
-            const qty = parseFloat(document.getElementById('bundleQuantity').value) || 0;
+            const qty = parseFloat(document.getElementById('bundleQuantity').value) ||
+                0;
             const bundlePrice = parseFloat(document.getElementById('bundleTotalPrice').value) || 0;
             const originalPrice = parseFloat(document.getElementById('bundleOriginalPrice').value) || 0;
-            
             if (qty <= 0 || originalPrice <= 0) {
                 return { value: null, detail: '请输入有效的参数' };
             }
@@ -826,16 +943,15 @@
 
         // 加价购
         function calculateExtraPurchase() {
-            const threshold = parseFloat(document.getElementById('extraThreshold').value) || 0;
+            const threshold = parseFloat(document.getElementById('extraThreshold').value) ||
+                0;
             const extraPrice = parseFloat(document.getElementById('extraPrice').value) || 0;
             const originalPrice = parseFloat(document.getElementById('extraOriginalPrice').value) || 0;
-            
             if (originalPrice <= 0) {
                 return { value: null, detail: '请输入有效的参数' };
             }
             
             const discount = (extraPrice / originalPrice) * 10;
-            
             return {
                 value: discount,
                 detail: `满${threshold}元，加${extraPrice}元换购<br>换购商品原价：${originalPrice}元<br>换购商品折扣：${discount.toFixed(2)}折（节省${(originalPrice - extraPrice).toFixed(2)}元）`
@@ -844,14 +960,14 @@
 
         // 百分比优惠
         function calculatePercentOff() {
-            const percent = parseFloat(document.getElementById('percentValue').value) || 0;
+            const percent = parseFloat(document.getElementById('percentValue').value) ||
+                0;
             
             if (percent < 0 || percent > 100) {
                 return { value: null, detail: '请输入0-100之间的百分比' };
             }
             
             const discount = (100 - percent) / 10;
-            
             return {
                 value: discount,
                 detail: `立减${percent}%<br>相当于${discount.toFixed(2)}折优惠<br>实际支付${(100 - percent).toFixed(0)}%`
@@ -860,7 +976,8 @@
 
         // 会员积分倍数
         function calculateMemberMultiplier() {
-            const multiplier = parseFloat(document.getElementById('multiplierValue').value) || 1;
+            const multiplier = parseFloat(document.getElementById('multiplierValue').value) ||
+                1;
             const pointValue = parseFloat(document.getElementById('pointValueRate').value) || 0;
             
             const extraValue = (multiplier - 1) * pointValue;
