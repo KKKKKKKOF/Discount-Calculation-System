@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能分账计算系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .mode-card {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .mode-card.active {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+        }
+
+        .mode-card .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .mode-card .mode-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .mode-card .mode-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .person-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .person-item {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .person-item.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .person-badge {
+            background: var(--primary-color);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .person-item.selected .person-badge {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .person-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .person-remove {
+            margin-left: auto;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-card {
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid var(--border-color);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .summary-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+            margin-top: 30px;
+        }
+
+        .summary-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .summary-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .summary-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .summary-amount {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .summary-details {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .summary-detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .file-upload.has-file {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.05);
+            border-style: solid;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .receipt-preview {
+            margin-top: 10px;
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: var(--shadow);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content.large {
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .selected-persons-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--bg-color);
+            border-radius: 8px;
+            min-height: 40px;
+        }
+
+        .selected-tag {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .selected-tag .remove-tag {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .amount-input-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .amount-input-item {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .clear-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px dashed var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.3);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .main-content {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .mode-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .amount-input-item {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-amount {
+                font-size: 20px;
+            }
+
+            .clear-actions {
+                flex-direction: column;
+            }
+
+            .clear-actions .btn {
+                width: 100%;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .extra-fee-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .info-badge {
+            display: inline-block;
+            background: var(--warning-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 智能分账计算系统</h1>
+            <p>支持多种分账模式，实时计算，让账目清清楚楚</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 模式选择 -->
+            <div class="section">
+                <div class="section-title">选择计算模式</div>
+                <div class="mode-selector">
+                    <div class="mode-card active" data-mode="aa">
+                        <div class="icon">🍜</div>
+                        <div class="mode-name">AA制模式</div>
+                        <div class="mode-desc">多项消费，灵活选人</div>
+                    </div>
+                    <div class="mode-card" data-mode="share">
+                        <div class="icon">🎁</div>
+                        <div class="mode-name">优惠共享模式</div>
+                        <div class="mode-desc">优惠按比例分摊</div>
+                    </div>
+                    <div class="mode-card" data-mode="equal">
+                        <div class="icon">✂️</div>
+                        <div class="mode-name">优惠平分模式</div>
+                        <div class="mode-desc">优惠金额均分</div>
+                    </div>
+                    <div class="mode-card" data-mode="purchase">
+                        <div class="icon">🛒</div>
+                        <div class="mode-name">代购模式</div>
+                        <div class="mode-desc">代购费用分摊</div>
+                    </div>
+                    <div class="mode-card" data-mode="custom">
+                        <div class="icon">⚙️</div>
+                        <div class="mode-name">自定义模式</div>
+                        <div class="mode-desc">手动输入金额</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 人员管理 -->
+            <div class="section">
+                <div class="section-title">人员管理</div>
+                <div class="input-group">
+                    <div class="grid-2">
+                        <input type="text" class="input-field" id="newPersonName" placeholder="输入姓名">
+                        <button class="btn btn-primary" onclick="addPerson()">➕ 添加人员</button>
+                    </div>
+                </div>
+                <div class="person-list" id="personList"></div>
+                
+                <!-- 清除功能按钮 -->
+                <div class="clear-actions">
+                    <button class="btn btn-warning btn-small" onclick="clearPersons()">🗑️ 清除所有人员</button>
+                    <button class="btn btn-warning btn-small" onclick="clearItems()">🗑️ 清除当前清单</button>
+                    <button class="btn btn-danger btn-small" onclick="clearAll()">⚠️ 清除所有信息</button>
+                </div>
+            </div>
+
+            <!-- AA制模式 -->
+            <div class="section mode-content" id="mode-aa">
+                <div class="section-title">AA制详情</div>
+                <div id="aaItemsList"></div>
+                <button class="btn btn-primary" onclick="addAAItem()">➕ 添加消费项目</button>
+            </div>
+
+            <!-- 优惠共享模式 -->
+            <div class="section mode-content hidden" id="mode-share">
+                <div class="section-title">优惠共享设置</div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="isDelivery" onchange="toggleDeliveryMode()">
+                    <label for="isDelivery">外卖模式（额外费用均分）</label>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">订单总金额</label>
+                    <input type="number" class="input-field" id="shareTotalAmount" placeholder="输入订单总金额" oninput="calculateShare()">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">优惠总金额</label>
+                    <input type="number" class="input-field" id="shareDiscountAmount" placeholder="输入优惠金额" oninput="calculateShare()">
+                </div>
+
+                <div id="deliveryFees" class="hidden">
+                    <div class="input-group">
+                        <label class="input-label">额外费用（均分）</label>
+                        <div id="extraFeesList"></div>
+                        <button class="btn btn-secondary btn-small" onclick="addExtraFee()" style="margin-top: 10px;">➕ 添加额外费用</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">每人购买金额</label>
+                    <div class="amount-input-grid" id="shareAmountInputs"></div>
+                </div>
+            </div>
+
+            <!-- 优惠平分模式 -->
+            <div class="section mode-content hidden" id="mode-equal">
+                <div class="section-title">优惠平分设置</div>
+                
+                <div class="input-group">
+                    <label class="input-label">优惠总金额</label>
+                    <input type="number" class="input-field" id="equalDiscountAmount" placeholder="输入优惠总金额" oninput="calculateEqual()">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">每人购买金额</label>
+                    <div class="amount-input-grid" id="equalAmountInputs"></div>
+                </div>
+            </div>
+
+            <!-- 代购模式 -->
+            <div class="section mode-content hidden" id="mode-purchase">
+                <div class="section-title">代购详情</div>
+                <div id="purchaseItemsList"></div>
+                <button class="btn btn-primary" onclick="addPurchaseItem()">➕ 添加代购项目</button>
+                
+                <div class="input-group" style="margin-top: 20px;">
+                    <label class="input-label">额外固定费用（跑腿费、油费等）</label>
+                    <div id="purchaseExtraFees"></div>
+                    <button class="btn btn-secondary btn-small" onclick="addPurchaseExtraFee()" style="margin-top: 10px;">➕ 添加额外费用</button>
+                </div>
+            </div>
+
+            <!-- 自定义模式 -->
+            <div class="section mode-content hidden" id="mode-custom">
+                <div class="section-title">自定义金额</div>
+                <div class="input-group">
+                    <label class="input-label">为每个人输入应付金额</label>
+                    <div class="amount-input-grid" id="customAmountInputs"></div>
+                </div>
+            </div>
+
+            <!-- 汇总面板 -->
+            <div class="summary-panel" id="summaryPanel">
+                <div class="summary-title">
+                    <span>💳 结算汇总</span>
+                    <div id="detailToggle" class="hidden" style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
+                        <span>查看详情</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showDetailsToggle" onchange="toggleDetails()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div id="summaryContent">
+                    <div style="text-align: center; opacity: 0.8;">请先添加人员和消费项目</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态
+        let state = {
+            currentMode: 'aa',
+            persons: [],
+            aaItems: [],
+            shareData: {
+                totalAmount: 0,
+                discountAmount: 0,
+                extraFees: [],
+                personAmounts: {}
+            },
+            equalData: {
+                discountAmount: 0,
+                personAmounts: {}
+            },
+            purchaseData: {
+                items: [],
+                extraFees: []
+            },
+            customData: {},
+            showDetails: false
+        };
+
+        // 初始化
+        function init() {
+            loadFromLocalStorage();
+            renderPersonList();
+            renderAAItems();
+            renderPurchaseItems();
+            renderPurchaseExtraFees();
+            initModeInputs();
+            updateSummary();
+            
+            // 恢复模式选择
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.dataset.mode === state.currentMode) {
+                    card.classList.add('active');
+                }
+            });
+            
+            // 显示对应模式内容
+            document.querySelectorAll('.mode-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById('mode-' + state.currentMode).classList.remove('hidden');
+            
+            // 恢复外卖模式
+            if (state.shareData.extraFees && state.shareData.extraFees.length > 0) {
+                document.getElementById('isDelivery').checked = true;
+                document.getElementById('deliveryFees').classList.remove('hidden');
+                renderExtraFees();
+            }
+            
+            // 恢复输入值
+            if (document.getElementById('shareTotalAmount')) {
+                document.getElementById('shareTotalAmount').value = state.shareData.totalAmount || '';
+            }
+            if (document.getElementById('shareDiscountAmount')) {
+                document.getElementById('shareDiscountAmount').value = state.shareData.discountAmount || '';
+            }
+            if (document.getElementById('equalDiscountAmount')) {
+                document.getElementById('equalDiscountAmount').value = state.equalData.discountAmount || '';
+            }
+        }
+
+        // 本地存储
+        function saveToLocalStorage() {
+            localStorage.setItem('billSplitState', JSON.stringify(state));
+            console.log('数据已保存到本地');
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('billSplitState');
+            if (saved) {
+                try {
+                    const loadedState = JSON.parse(saved);
+                    // 合并状态，保持默认值
+                    state = {
+                        ...state,
+                        ...loadedState
+                    };
+                    console.log('数据已从本地加载');
+                } catch (e) {
+                    console.error('加载数据失败:', e);
+                }
+            }
+        }
+
+        // 清除功能
+        function clearPersons() {
+            if (confirm('确定要清除所有人员吗？这将同时清除所有相关数据。')) {
+                state.persons = [];
+                state.shareData.personAmounts = {};
+                state.equalData.personAmounts = {};
+                state.customData = {};
+                
+                // 清除AA制中的选人
+                state.aaItems.forEach(item => {
+                    item.selectedPersons = [];
+                });
+                
+                renderPersonList();
+                renderAAItems();
+                initModeInputs();
+                updateSummary();
+                saveToLocalStorage();
+                showToast('已清除所有人员', 'success');
+            }
+        }
+
+        function clearItems() {
+            if (confirm('确定要清除当前模式的所有清单吗？')) {
+                switch (state.currentMode) {
+                    case 'aa':
+                        state.aaItems = [];
+                        renderAAItems();
+                        break;
+                    case 'share':
+                        state.shareData.totalAmount = 0;
+                        state.shareData.discountAmount = 0;
+                        state.shareData.extraFees = [];
+                        state.shareData.personAmounts = {};
+                        document.getElementById('shareTotalAmount').value = '';
+                        document.getElementById('shareDiscountAmount').value = '';
+                        document.getElementById('isDelivery').checked = false;
+                        document.getElementById('deliveryFees').classList.add('hidden');
+                        renderExtraFees();
+                        initModeInputs();
+                        break;
+                    case 'equal':
+                        state.equalData.discountAmount = 0;
+                        state.equalData.personAmounts = {};
+                        document.getElementById('equalDiscountAmount').value = '';
+                        initModeInputs();
+                        break;
+                    case 'purchase':
+                        state.purchaseData.items = [];
+                        state.purchaseData.extraFees = [];
+                        renderPurchaseItems();
+                        renderPurchaseExtraFees();
+                        break;
+                    case 'custom':
+                        state.customData = {};
+                        initModeInputs();
+                        break;
+                }
+                updateSummary();
+                saveToLocalStorage();
+                showToast('已清除当前清单', 'success');
+            }
+        }
+
+        function clearAll() {
+            if (confirm('⚠️ 确定要清除所有信息吗？此操作不可恢复！')) {
+                if (confirm('再次确认：真的要删除所有数据吗？')) {
+                    localStorage.removeItem('billSplitState');
+                    state = {
+                        currentMode: 'aa',
+                        persons: [],
+                        aaItems: [],
+                        shareData: {
+                            totalAmount: 0,
+                            discountAmount: 0,
+                            extraFees: [],
+                            personAmounts: {}
+                        },
+                        equalData: {
+                            discountAmount: 0,
+                            personAmounts: {}
+                        },
+                        purchaseData: {
+                            items: [],
+                            extraFees: []
+                        },
+                        customData: {},
+                        showDetails: false
+                    };
+                    
+                    // 重新初始化界面
+                    init();
+                    showToast('已清除所有信息', 'success');
+                }
+            }
+        }
+
+        // 模式切换
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                
+                const mode = this.dataset.mode;
+                state.currentMode = mode;
+                
+                document.querySelectorAll('.mode-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById('mode-' + mode).classList.remove('hidden');
+                
+                initModeInputs();
+                updateSummary();
+                saveToLocalStorage();
+            });
+        });
+
+        // 人员管理
+        function addPerson() {
+            const input = document.getElementById('newPersonName');
+            const name = input.value.trim();
+            
+            if (!name) {
+                showToast('请输入姓名', 'warning');
+                return;
+            }
+            
+            if (state.persons.some(p => p.name === name)) {
+                showToast('该姓名已存在', 'warning');
+                return;
+            }
+            
+            state.persons.push({
+                id: Date.now(),
+                name: name
+            });
+            
+            input.value = '';
+            renderPersonList();
+            initModeInputs();
+            updateSummary();
+            saveToLocalStorage();
+            showToast('添加成功', 'success');
+        }
+
+        function removePerson(id) {
+            if (confirm('确定要删除该人员吗？')) {
+                state.persons = state.persons.filter(p => p.id !== id);
+                
+                // 删除相关数据
+                delete state.shareData.personAmounts[id];
+                delete state.equalData.personAmounts[id];
+                delete state.customData[id];
+                
+                // 从AA项目中移除
+                state.aaItems.forEach(item => {
+                    item.selectedPersons = item.selectedPersons.filter(pid => pid !== id);
+                });
+                
+                renderPersonList();
+                renderAAItems();
+                initModeInputs();
+                updateSummary();
+                saveToLocalStorage();
+            }
+        }
+
+        function renderPersonList() {
+            const container = document.getElementById('personList');
+            if (state.persons.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 20px;">暂无人员，请添加</div>';
+                return;
+            }
+            
+            container.innerHTML = state.persons.map((person, index) => {
+                const badge = index < 9 ? (index + 1) : (index < 35 ? String.fromCharCode(65 + index - 9) : '•');
+                return `
+                    <div class="person-item">
+                        <div class="person-badge">${badge}</div>
+                        <div class="person-name">${person.name}</div>
+                        <button class="person-remove" onclick="removePerson(${person.id})">×</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // AA制模式
+        function addAAItem() {
+            const item = {
+                id: Date.now(),
+                description: '',
+                amount: 0,
+                selectedPersons: [],
+                receipt: null
+            };
+            
+            state.aaItems.push(item);
+            renderAAItems();
+            saveToLocalStorage();
+        }
+
+        function removeAAItem(id) {
+            state.aaItems = state.aaItems.filter(item => item.id !== id);
+            renderAAItems();
+            updateSummary();
+            saveToLocalStorage();
+        }
+
+        function renderAAItems() {
+            const container = document.getElementById('aaItemsList');
+            
+            if (state.aaItems.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = state.aaItems.map(item => `
+                <div class="item-card">
+                    <div class="item-header">
+                        <div class="item-title">消费项目 #${state.aaItems.indexOf(item) + 1}</div>
+                        <button class="btn btn-danger btn-small" onclick="removeAAItem(${item.id})">删除</button>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">消费描述</label>
+                        <input type="text" class="input-field" value="${item.description}" 
+                            oninput="updateAAItem(${item.id}, 'description', this.value)" 
+                            placeholder="例如：午餐、晚餐">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">消费金额</label>
+                        <input type="number" class="input-field" value="${item.amount || ''}" 
+                            oninput="updateAAItem(${item.id}, 'amount', parseFloat(this.value) || 0)" 
+                            placeholder="输入金额">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">参与人员 
+                            <span class="info-badge">键盘快捷键：1-9, A-Z</span>
+                        </label>
+                        <button class="btn btn-secondary btn-small" onclick="openPersonSelector(${item.id})">
+                            选择参与人员 (${item.selectedPersons.length}人)
+                        </button>
+                        <div class="selected-persons-display">
+                            ${item.selectedPersons.map(pid => {
+                                const person = state.persons.find(p => p.id === pid);
+                                return person ? `<span class="selected-tag">${person.name}</span>` : '';
+                            }).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">上传小票（可选）</label>
+                        <div class="file-upload ${item.receipt ? 'has-file' : ''}" onclick="document.getElementById('receipt-${item.id}').click()">
+                            <input type="file" id="receipt-${item.id}" accept="image/*" 
+                                onchange="handleReceiptUpload(${item.id}, this)">
+                            📷 ${item.receipt ? '已上传（点击查看或更换）' : '点击上传小票'}
+                        </div>
+                        ${item.receipt ? `
+                            <img src="${item.receipt}" class="receipt-preview" onclick="viewReceipt(${item.id}); event.stopPropagation();" alt="小票预览">
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateAAItem(id, field, value) {
+            const item = state.aaItems.find(item => item.id === id);
+            if (item) {
+                item[field] = value;
+                updateSummary();
+                saveToLocalStorage();
+            }
+        }
+
+        function handleReceiptUpload(id, input) {
+            const item = state.aaItems.find(item => item.id === id);
+            if (item && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    item.receipt = e.target.result;
+                    renderAAItems();
+                    saveToLocalStorage();
+                    showToast('小票上传成功', 'success');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function viewReceipt(itemId) {
+            const item = state.aaItems.find(i => i.id === itemId);
+            if (!item || !item.receipt) return;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            };
+            
+            modal.innerHTML = `
+                <div class="modal-content large">
+                    <div class="modal-header">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>小票查看</span>
+                            <button class="btn btn-secondary btn-small" onclick="this.closest('.modal').remove()">关闭</button>
+                        </div>
+                    </div>
+                    <img src="${item.receipt}" class="modal-image" alt="小票">
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // 选人模式
+        let currentSelectingItemId = null;
+        let selectedPersonsTemp = [];
+
+        function openPersonSelector(itemId) {
+            if (state.persons.length === 0) {
+                showToast('请先添加人员', 'warning');
+                return;
+            }
+            
+            currentSelectingItemId = itemId;
+            const item = state.aaItems.find(i => i.id === itemId);
+            selectedPersonsTemp = [...item.selectedPersons];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'personSelectorModal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">选择参与人员</div>
+                    <div style="margin-bottom: 15px; color: var(--text-secondary); font-size: 13px;">
+                        💡 使用键盘快捷键：1-9选择前9人，A-Z选择第10-35人，或点击选择
+                    </div>
+                    <div class="person-list" id="modalPersonList">
+                        ${state.persons.map((person, index) => {
+                            const badge = index < 9 ? (index + 1) : (index < 35 ? String.fromCharCode(65 + index - 9) : '•');
+                            const selected = selectedPersonsTemp.includes(person.id);
+                            return `
+                                <div class="person-item ${selected ? 'selected' : ''}" 
+                                    onclick="togglePersonSelection(${person.id})" 
+                                    data-person-id="${person.id}">
+                                    <div class="person-badge">${badge}</div>
+                                    <div class="person-name">${person.name}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button class="btn btn-primary" style="flex: 1;" onclick="confirmPersonSelection()">确认</button>
+                        <button class="btn btn-secondary" onclick="closePersonSelector()">取消</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            document.addEventListener('keydown', handlePersonSelectionKeyboard);
+        }
+
+        function togglePersonSelection(personId) {
+            const index = selectedPersonsTemp.indexOf(personId);
+            if (index > -1) {
+                selectedPersonsTemp.splice(index, 1);
+            } else {
+                selectedPersonsTemp.push(personId);
+            }
+            
+            // 更新显示
+            const personItems = document.querySelectorAll('#modalPersonList .person-item');
+            personItems.forEach(item => {
+                const pid = parseInt(item.dataset.personId);
+                if (pid === personId) {
+                    item.classList.toggle('selected');
+                }
+            });
+        }
+
+        function handlePersonSelectionKeyboard(e) {
+            // 1-9
+            if (e.key >= '1' && e.key <= '9') {
+                const index = parseInt(e.key) - 1;
+                if (index < state.persons.length) {
+                    togglePersonSelection(state.persons[index].id);
+                }
+            }
+            // A-Z
+            else if (e.key.toUpperCase() >= 'A' && e.key.toUpperCase() <= 'Z') {
+                const index = e.key.toUpperCase().charCodeAt(0) - 65 + 9;
+                if (index < state.persons.length) {
+                    togglePersonSelection(state.persons[index].id);
+                }
+            }
+            // Enter确认
+            else if (e.key === 'Enter') {
+                confirmPersonSelection();
+            }
+            // Escape取消
+            else if (e.key === 'Escape') {
+                closePersonSelector();
+            }
+        }
+
+        function confirmPersonSelection() {
+            const item = state.aaItems.find(i => i.id === currentSelectingItemId);
+            if (item) {
+                item.selectedPersons = [...selectedPersonsTemp];
+                renderAAItems();
+                updateSummary();
+                saveToLocalStorage();
+            }
+            closePersonSelector();
+        }
+
+        function closePersonSelector() {
+            const modal = document.getElementById('personSelectorModal');
+            if (modal) {
+                modal.remove();
+            }
+            document.removeEventListener('keydown', handlePersonSelectionKeyboard);
+            currentSelectingItemId = null;
+            selectedPersonsTemp = [];
+        }
+
+        // 优惠共享模式
+        function toggleDeliveryMode() {
+            const isDelivery = document.getElementById('isDelivery').checked;
+            const deliveryFees = document.getElementById('deliveryFees');
+            
+            if (isDelivery) {
+                deliveryFees.classList.remove('hidden');
+                if (state.shareData.extraFees.length === 0) {
+                    addExtraFee();
+                }
+            } else {
+                deliveryFees.classList.add('hidden');
+                state.shareData.extraFees = [];
+            }
+            
+            renderExtraFees();
+            calculateShare();
+            saveToLocalStorage();
+        }
+
+        function addExtraFee() {
+            state.shareData.extraFees.push({
+                id: Date.now(),
+                name: '',
+                amount: 0
+            });
+            renderExtraFees();
+            saveToLocalStorage();
+        }
+
+        function renderExtraFees() {
+            const container = document.getElementById('extraFeesList');
+            container.innerHTML = state.shareData.extraFees.map(fee => `
+                <div class="extra-fee-item">
+                    <input type="text" class="input-field" value="${fee.name}" 
+                        placeholder="费用名称（如配送费）" 
+                        oninput="updateExtraFee(${fee.id}, 'name', this.value)">
+                    <input type="number" class="input-field" value="${fee.amount || ''}" 
+                        placeholder="金额" 
+                        oninput="updateExtraFee(${fee.id}, 'amount', parseFloat(this.value) || 0)">
+                    <button class="btn btn-danger btn-small" onclick="removeExtraFee(${fee.id})">删除</button>
+                </div>
+            `).join('');
+        }
+
+        function updateExtraFee(id, field, value) {
+            const fee = state.shareData.extraFees.find(f => f.id === id);
+            if (fee) {
+                fee[field] = value;
+                calculateShare();
+                saveToLocalStorage();
+            }
+        }
+
+        function removeExtraFee(id) {
+            state.shareData.extraFees = state.shareData.extraFees.filter(f => f.id !== id);
+            renderExtraFees();
+            calculateShare();
+            saveToLocalStorage();
+        }
+
+        function initModeInputs() {
+            // 优惠共享模式
+            const shareContainer = document.getElementById('shareAmountInputs');
+            shareContainer.innerHTML = state.persons.map(person => `
+                <div class="amount-input-item">
+                    <label>${person.name}</label>
+                    <input type="number" class="input-field" 
+                        value="${state.shareData.personAmounts[person.id] || ''}" 
+                        placeholder="输入购买金额" 
+                        oninput="updateShareAmount(${person.id}, parseFloat(this.value) || 0)">
+                </div>
+            `).join('');
+            
+            // 优惠平分模式
+            const equalContainer = document.getElementById('equalAmountInputs');
+            equalContainer.innerHTML = state.persons.map(person => `
+                <div class="amount-input-item">
+                    <label>${person.name}</label>
+                    <input type="number" class="input-field" 
+                        value="${state.equalData.personAmounts[person.id] || ''}" 
+                        placeholder="输入购买金额" 
+                        oninput="updateEqualAmount(${person.id}, parseFloat(this.value) || 0)">
+                </div>
+            `).join('');
+            
+            // 自定义模式
+            const customContainer = document.getElementById('customAmountInputs');
+            customContainer.innerHTML = state.persons.map(person => `
+                <div class="amount-input-item">
+                    <label>${person.name}</label>
+                    <input type="number" class="input-field" 
+                        value="${state.customData[person.id] || ''}" 
+                        placeholder="输入应付金额" 
+                        oninput="updateCustomAmount(${person.id}, parseFloat(this.value) || 0)">
+                </div>
+            `).join('');
+        }
+
+        function updateShareAmount(personId, amount) {
+            state.shareData.personAmounts[personId] = amount;
+            calculateShare();
+            saveToLocalStorage();
+        }
+
+        function calculateShare() {
+            state.shareData.totalAmount = parseFloat(document.getElementById('shareTotalAmount')?.value) || 0;
+            state.shareData.discountAmount = parseFloat(document.getElementById('shareDiscountAmount')?.value) || 0;
+            
+            updateSummary();
+            saveToLocalStorage();
+        }
+
+        // 优惠平分模式
+        function updateEqualAmount(personId, amount) {
+            state.equalData.personAmounts[personId] = amount;
+            calculateEqual();
+            saveToLocalStorage();
+        }
+
+        function calculateEqual() {
+            state.equalData.discountAmount = parseFloat(document.getElementById('equalDiscountAmount')?.value) || 0;
+            updateSummary();
+            saveToLocalStorage();
+        }
+
+        // 代购模式
+        function addPurchaseItem() {
+            const item = {
+                id: Date.now(),
+                buyerName: '',
+                description: '',
+                amount: 0
+            };
+            
+            state.purchaseData.items.push(item);
+            renderPurchaseItems();
+            saveToLocalStorage();
+        }
+
+        function removePurchaseItem(id) {
+            state.purchaseData.items = state.purchaseData.items.filter(item => item.id !== id);
+            renderPurchaseItems();
+            updateSummary();
+            saveToLocalStorage();
+        }
+
+        function renderPurchaseItems() {
+            const container = document.getElementById('purchaseItemsList');
+            
+            if (state.purchaseData.items.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = state.purchaseData.items.map(item => `
+                <div class="item-card">
+                    <div class="item-header">
+                        <div class="item-title">代购项目 #${state.purchaseData.items.indexOf(item) + 1}</div>
+                        <button class="btn btn-danger btn-small" onclick="removePurchaseItem(${item.id})">删除</button>
+                    </div>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label class="input-label">买家姓名</label>
+                            <input type="text" class="input-field" value="${item.buyerName}" 
+                                oninput="updatePurchaseItem(${item.id}, 'buyerName', this.value)" 
+                                placeholder="输入买家姓名">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="input-label">商品金额</label>
+                            <input type="number" class="input-field" value="${item.amount || ''}" 
+                                oninput="updatePurchaseItem(${item.id}, 'amount', parseFloat(this.value) || 0)" 
+                                placeholder="输入金额">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">商品描述</label>
+                        <input type="text" class="input-field" value="${item.description}" 
+                            oninput="updatePurchaseItem(${item.id}, 'description', this.value)" 
+                            placeholder="商品描述">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updatePurchaseItem(id, field, value) {
+            const item = state.purchaseData.items.find(item => item.id === id);
+            if (item) {
+                item[field] = value;
+                updateSummary();
+                saveToLocalStorage();
+            }
+        }
+
+        function addPurchaseExtraFee() {
+            state.purchaseData.extraFees.push({
+                id: Date.now(),
+                name: '',
+                amount: 0
+            });
+            renderPurchaseExtraFees();
+            saveToLocalStorage();
+        }
+
+        function renderPurchaseExtraFees() {
+            const container = document.getElementById('purchaseExtraFees');
+            container.innerHTML = state.purchaseData.extraFees.map(fee => `
+                <div class="extra-fee-item">
+                    <input type="text" class="input-field" value="${fee.name}" 
+                        placeholder="费用名称（如跑腿费）" 
+                        oninput="updatePurchaseExtraFee(${fee.id}, 'name', this.value)">
+                    <input type="number" class="input-field" value="${fee.amount || ''}" 
+                        placeholder="金额" 
+                        oninput="updatePurchaseExtraFee(${fee.id}, 'amount', parseFloat(this.value) || 0)">
+                    <button class="btn btn-danger btn-small" onclick="removePurchaseExtraFee(${fee.id})">删除</button>
+                </div>
+            `).join('');
+        }
+
+        function updatePurchaseExtraFee(id, field, value) {
+            const fee = state.purchaseData.extraFees.find(f => f.id === id);
+            if (fee) {
+                fee[field] = value;
+                updateSummary();
+                saveToLocalStorage();
+            }
+        }
+
+        function removePurchaseExtraFee(id) {
+            state.purchaseData.extraFees = state.purchaseData.extraFees.filter(f => f.id !== id);
+            renderPurchaseExtraFees();
+            updateSummary();
+            saveToLocalStorage();
+        }
+
+        // 自定义模式
+        function updateCustomAmount(personId, amount) {
+            state.customData[personId] = amount;
+            updateSummary();
+            saveToLocalStorage();
+        }
+
+        // 详情切换
+        function toggleDetails() {
+            state.showDetails = document.getElementById('showDetailsToggle').checked;
+            updateSummary();
+            saveToLocalStorage();
+        }
+
+        // 汇总计算
+        function updateSummary() {
+            const container = document.getElementById('summaryContent');
+            const detailToggle = document.getElementById('detailToggle');
+            
+            if (state.persons.length === 0) {
+                container.innerHTML = '<div style="text-align: center; opacity: 0.8;">请先添加人员</div>';
+                detailToggle.classList.add('hidden');
+                return;
+            }
+            
+            let summary = {};
+            let details = {};
+            
+            switch (state.currentMode) {
+                case 'aa':
+                    const aaResult = calculateAASummary();
+                    summary = aaResult.summary;
+                    details = aaResult.details;
+                    detailToggle.classList.remove('hidden');
+                    document.getElementById('showDetailsToggle').checked = state.showDetails;
+                    break;
+                case 'share':
+                    summary = calculateShareSummary();
+                    detailToggle.classList.add('hidden');
+                    break;
+                case 'equal':
+                    summary = calculateEqualSummary();
+                    detailToggle.classList.add('hidden');
+                    break;
+                case 'purchase':
+                    summary = calculatePurchaseSummary();
+                    detailToggle.classList.add('hidden');
+                    break;
+                case 'custom':
+                    summary = calculateCustomSummary();
+                    detailToggle.classList.add('hidden');
+                    break;
+            }
+            
+            container.innerHTML = Object.entries(summary).map(([personId, amount]) => {
+                const person = state.persons.find(p => p.id == personId);
+                if (!person && state.currentMode !== 'purchase') return '';
+                
+                const personName = person ? person.name : personId;
+                const personDetails = details && details[personId] ? details[personId] : [];
+                
+                return `
+                    <div class="summary-item">
+                        <div class="summary-item-header">
+                            <div class="summary-name">${personName}</div>
+                            <div class="summary-amount">¥${amount.toFixed(2)}</div>
+                        </div>
+                        ${state.showDetails && personDetails.length > 0 ? `
+                            <div class="summary-details">
+                                ${personDetails.map(detail => `
+                                    <div class="summary-detail-item">
+                                        <span>${detail.description || '未命名项目'}</span>
+                                        <span>¥${detail.amount.toFixed(2)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('') || '<div style="text-align: center; opacity: 0.8;">暂无数据</div>';
+        }
+
+        function calculateAASummary() {
+            const summary = {};
+            const details = {};
+            
+            state.persons.forEach(person => {
+                summary[person.id] = 0;
+                details[person.id] = [];
+            });
+            
+            state.aaItems.forEach(item => {
+                if (item.selectedPersons.length > 0 && item.amount > 0) {
+                    const perPerson = item.amount / item.selectedPersons.length;
+                    item.selectedPersons.forEach(personId => {
+                        if (summary[personId] !== undefined) {
+                            summary[personId] += perPerson;
+                            details[personId].push({
+                                description: item.description,
+                                amount: perPerson
+                            });
+                        }
+                    });
+                }
+            });
+            
+            return { summary, details };
+        }
+
+        function calculateShareSummary() {
+            const summary = {};
+            state.persons.forEach(person => {
+                summary[person.id] = 0;
+            });
+            
+            // 计算每人购买的原价总和
+            let totalPersonAmount = 0;
+            Object.values(state.shareData.personAmounts).forEach(amount => {
+                totalPersonAmount += amount;
+            });
+            
+            if (totalPersonAmount === 0) return summary;
+            
+            // 计算额外费用总和
+            const totalExtraFees = state.shareData.extraFees.reduce((sum, fee) => sum + fee.amount, 0);
+            const extraFeePerPerson = totalExtraFees / state.persons.length;
+            
+            // 实际支付金额（原价-优惠+额外费用）
+            const actualTotal = totalPersonAmount - state.shareData.discountAmount + totalExtraFees;
+            
+            state.persons.forEach(person => {
+                const personAmount = state.shareData.personAmounts[person.id] || 0;
+                // 按比例分摊优惠
+                const discountShare = (personAmount / totalPersonAmount) * state.shareData.discountAmount;
+                // 最终金额 = 原价 - 分摊的优惠 + 均分的额外费用
+                summary[person.id] = personAmount - discountShare + extraFeePerPerson;
+            });
+            
+            return summary;
+        }
+
+        function calculateEqualSummary() {
+            const summary = {};
+            
+            const participantCount = Object.values(state.equalData.personAmounts).filter(amount => amount > 0).length;
+            if (participantCount === 0) return summary;
+            
+            const discountPerPerson = state.equalData.discountAmount / participantCount;
+            
+            state.persons.forEach(person => {
+                const personAmount = state.equalData.personAmounts[person.id] || 0;
+                if (personAmount > 0) {
+                    summary[person.id] = personAmount - discountPerPerson;
+                } else {
+                    summary[person.id] = 0;
+                }
+            });
+            
+            return summary;
+        }
+
+        function calculatePurchaseSummary() {
+            const summary = {};
+            
+            // 按买家姓名分组
+            const buyerGroups = {};
+            state.purchaseData.items.forEach(item => {
+                if (!item.buyerName) return;
+                if (!buyerGroups[item.buyerName]) {
+                    buyerGroups[item.buyerName] = 0;
+                }
+                buyerGroups[item.buyerName] += item.amount;
+            });
+            
+            // 计算总额外费用
+            const totalExtraFees = state.purchaseData.extraFees.reduce((sum, fee) => sum + fee.amount, 0);
+            const buyerCount = Object.keys(buyerGroups).length;
+            const extraFeePerBuyer = buyerCount > 0 ? totalExtraFees / buyerCount : 0;
+            
+            // 为每个买家计算总额
+            Object.entries(buyerGroups).forEach(([buyerName, amount]) => {
+                // 使用买家姓名作为key，因为不一定在persons列表中
+                summary[buyerName] = amount + extraFeePerBuyer;
+            });
+            
+            return summary;
+        }
+
+        function calculateCustomSummary() {
+            const summary = {};
+            state.persons.forEach(person => {
+                summary[person.id] = state.customData[person.id] || 0;
+            });
+            return summary;
+        }
+
+        // Toast提示
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                warning: '#f59e0b',
+                error: '#ef4444',
+                info: '#6366f1'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeft = `4px solid ${colors[type]}`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // 键盘事件 - 添加人员
+        document.getElementById('newPersonName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addPerson();
+            }
+        });
+
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>
