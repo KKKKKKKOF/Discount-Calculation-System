@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博朋克配置单（实时计算 + 美化导出 + 导入/导出）</title>
+<style>
+  /* ========== CYBERPUNK THEME ========== */
+  :root{
+    --bg:#0b0f1a;
+    --panel:#0f1526;
+    --panel-2:#0c1222;
+    --text:#e6f3ff;
+    --muted:#8aa0bf;
+    --neon1:#00ffd1;   /* 青色霓虹 */
+    --neon2:#ff3fd1;   /* 品红霓虹 */
+    --neon3:#7cf23a;   /* 电子绿 */
+    --line:#1c2547;
+    --danger:#ff5470;
+    --ok:#3cf5a9;
+    --warning:#f8ff6a;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:radial-gradient(1200px 800px at 10% 10%, #12172a 0%, #0b0f1a 60%) fixed;
+    color:var(--text);
+    font:14px/1.6 ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC", sans-serif;
+  }
+  .shell{max-width:1180px;margin:28px auto;padding:0 18px}
+  .card{
+    background:linear-gradient(180deg, rgba(15,21,38,.96) 0%, rgba(12,18,34,.96) 100%);
+    border:1px solid #1a2344;border-radius:16px;overflow:hidden;position:relative;
+    box-shadow:0 20px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(0,255,209,.08) inset, 0 0 0 1px rgba(255,63,209,.06);
+  }
+  .scanline:before{
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(180deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay;pointer-events:none;
+  }
+  .header{
+    padding:22px;border-bottom:1px solid var(--line);
+    background:
+      radial-gradient(500px 300px at 0% 0%, rgba(0,255,209,.10), transparent 60%),
+      radial-gradient(600px 400px at 100% 0%, rgba(255,63,209,.10), transparent 60%);
+  }
+  .title{
+    display:flex;align-items:center;gap:12px;margin-bottom:10px
+  }
+  .title h1{margin:0;font-size:22px;letter-spacing:.4px}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;
+    color:#061218;background:linear-gradient(90deg, var(--neon1), var(--neon2));
+    font-weight:800;text-transform:uppercase;letter-spacing:.6px
+  }
+  .sub{margin:0;color:var(--muted)}
+  .grid{
+    display:grid;gap:12px 16px;margin-top:16px;
+    grid-template-columns: repeat(4,1fr);
+  }
+  .field{display:flex;flex-direction:column;gap:6px}
+  .label{font-size:12px;color:var(--muted)}
+  .input{
+    height:40px;border:1px solid #1c2547;border-radius:10px;padding:0 12px;background:rgba(10,14,26,.7);outline:none;color:var(--text);
+    transition:.15s border-color,.15s box-shadow;
+    box-shadow:inset 0 0 0 1px rgba(0,255,209,.06);
+  }
+  .input:focus{
+    border-color:rgba(0,255,209,.6);
+    box-shadow:0 0 0 3px rgba(0,255,209,.15), 0 0 12px rgba(255,63,209,.15) inset;
+  }
+  .toolbar{
+    display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;padding:12px 16px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(18,23,42,.8), rgba(12,18,34,.8));
+  }
+  .btn{
+    appearance:none;border:1px solid #233060;background:linear-gradient(180deg,#101633,#0b1128);color:var(--text);
+    padding:8px 14px;border-radius:10px;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    text-shadow:0 0 6px rgba(0,255,209,.15);
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 10px 20px rgba(0,255,209,.10)}
+  .btn.primary{border-color:rgba(0,255,209,.6);background:linear-gradient(90deg, rgba(0,255,209,.15), rgba(255,63,209,.15))}
+  .btn.accent{border-color:rgba(255,63,209,.6);background:linear-gradient(90deg, rgba(255,63,209,.18), rgba(124,242,58,.12))}
+  .btn.ghost{border-color:#2a366b}
+  .table-wrap{padding:14px 16px 96px 16px;position:relative}
+  table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid #1a2549;border-radius:12px;overflow:hidden}
+  thead th{
+    background:linear-gradient(180deg,#0f1634,#0c1226);color:#cfe8ff;font-weight:800;text-align:left;padding:10px 12px;border-bottom:1px solid #1a2549;
+  }
+  tbody td{padding:8px 12px;border-bottom:1px solid #132045;vertical-align:middle;background:rgba(10,14,26,.6)}
+  tbody tr:last-child td{border-bottom:none}
+  .col-idx{width:42px;color:var(--muted)}
+  .col-name{width:128px;font-weight:700}
+  .col-model{min-width:260px}
+  .col-price{width:180px}
+  .col-qty{width:120px}
+  .col-subtotal{width:160px;text-align:right;font-variant-numeric:tabular-nums}
+  .pill{
+    height:36px;border:1px solid #22305f;border-radius:999px;padding:0 12px;width:100%;outline:none;background:rgba(8,12,24,.8);color:var(--text)
+  }
+  .pill:focus{border-color:rgba(255,63,209,.6);box-shadow:0 0 0 3px rgba(255,63,209,.12)}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .price-wrap{position:relative}
+  .price-wrap .prefix{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#7feeda;pointer-events:none}
+  .price-wrap .pill{padding-left:26px}
+  .invalid{border-color:var(--danger)!important;box-shadow:0 0 0 3px rgba(255,84,112,.18)!important}
+  .summary-bar{
+    position:sticky;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;
+    padding:12px 16px;border-top:1px solid #1a2549;background:rgba(11,15,26,.85);backdrop-filter:blur(6px);
+    border-bottom-left-radius:16px;border-bottom-right-radius:16px;
+  }
+  .sum-left{display:flex;gap:14px;color:#b9c8e6}
+  .sum-right{font-size:22px;font-weight:900;color:var(--neon1);text-shadow:0 0 10px rgba(0,255,209,.6)}
+  .hint{color:var(--muted);font-size:12px;margin-left:8px}
+  .icon-cell{display:flex;align-items:center;gap:8px}
+  .icon{width:18px;height:18px;display:inline-block;vertical-align:middle}
+
+  @media (max-width:1000px){ .grid{grid-template-columns: repeat(2,1fr)} .col-model{min-width:200px} }
+  @media print{ .toolbar,.summary-bar{display:none!important} .card{box-shadow:none;border:none} }
+
+  /* ========== EXPORT TEMPLATE (A4, CYBERPUNK) ========== */
+  .export-root{
+    position:fixed;left:-99999px;top:0;width:794px; /* ~ A4 width @96dpi */
+    background:#0a0e1a;color:var(--text);padding:28px;
+    border:1px solid #17224a;border-radius:14px;
+    box-shadow:0 0 0 1px rgba(0,255,209,.10), 0 0 0 1px rgba(255,63,209,.08) inset;
+  }
+  .ex-header{
+    display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;
+    background:
+      linear-gradient(90deg, rgba(0,255,209,.10), rgba(255,63,209,.10)),
+      linear-gradient(180deg, #101633, #0c1226);
+    border:1px solid #1a2549;border-radius:12px;padding:16px;
+    box-shadow:inset 0 0 16px rgba(0,255,209,.10);
+  }
+  .ex-title{
+    display:flex;align-items:center;gap:12px
+  }
+  .ex-title h2{margin:0;font-size:20px;letter-spacing:.4px}
+  .ex-badge{padding:4px 8px;border-radius:999px;background:linear-gradient(90deg,var(--neon1),var(--neon2));color:#061218;font-weight:900}
+  .ex-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 16px;color:#bcd0ef;margin-top:6px}
+  .ex-meta .k{color:#86a5d6}
+  .ex-table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid #1a2549;border-radius:12px;overflow:hidden}
+  .ex-table thead th{
+    background:linear-gradient(180deg,#101633,#0d142a);color:#cfe8ff;text-align:left;padding:10px 12px;border-bottom:1px solid #1a2549;font-weight:800
+  }
+  .ex-table tbody td{padding:10px 12px;border-bottom:1px solid #142046;background:rgba(10,14,26,.7)}
+  .ex-table tbody tr:last-child td{border-bottom:none}
+  .ex-col-idx{width:40px;color:#9db4da}
+  .ex-col-item{width:150px;font-weight:700}
+  .ex-col-model{min-width:240px}
+  .ex-col-price{width:120px}
+  .ex-col-qty{width:80px}
+  .ex-col-sub{width:140px;text-align:right}
+  .ex-item-icon{width:18px;height:18px;margin-right:8px;vertical-align:-3px}
+  .ex-summary{
+    margin-top:14px;border:1px solid #1a2549;border-radius:12px;padding:14px;background:linear-gradient(180deg,#101633,#0d142a);
+    display:flex;justify-content:space-between;align-items:center
+  }
+  .ex-total{font-size:22px;font-weight:900;color:var(--neon1);text-shadow:0 0 10px rgba(0,255,209,.6)}
+  .ex-note{color:#97acd2;font-size:12px}
+  .logo-mark{
+    font-weight:900;letter-spacing:1px;color:#0a1124;background:linear-gradient(90deg,var(--neon1),var(--neon2));padding:6px 10px;border-radius:8px
+  }
+</style>
+    <!-- 
+    ========================================
+    步骤1: 将您原HTML文件 <head> 标签内的内容放在这里
+    （如 <title>、<link>、<style> 等，但不要重复 charset 和 viewport）
+    ========================================
+    -->
+    
+    <title>请输入密码</title>
+    
+    <style>
+        /* 密码保护界面样式 */
+        #password-protection {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .password-box {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+        }
+        
+        .password-box h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .password-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        
+        .password-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .password-box button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .password-box button:hover {
+            background: #5568d3;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            margin-top: 10px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+        
+        #main-content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 密码保护界面 -->
+    <div id="password-protection">
+        <div class="password-box">
+            <h2>🔒 请输入访问密码</h2>
+            <input type="password" id="password-input" placeholder="请输入密码" autocomplete="off" />
+            <button onclick="checkPassword()">确认</button>
+            <div class="error-message" id="error-message"></div>
+        </div>
+    </div>
+
+    <!-- 实际网页内容区域 -->
+    <div id="main-content">
+          <div class="shell">
+    <div class="card scanline" id="quote">
+      <div class="header">
+        <div class="title">
+          <h1>配置单 · CYBER</h1>
+          <span class="badge">Realtime</span>
+        </div>
+        <p class="sub">赛博朋克风实时配置单：填写型号、单价与数量，系统即时计算；导出使用美化模板并自动过滤空项。</p>
+        <div class="grid">
+          <label class="field">
+            <span class="label">门店名称</span>
+            <input id="storeName" class="input" placeholder="如：东莞市XX电脑组装店" />
+          </label>
+          <label class="field">
+            <span class="label">客户姓名</span>
+            <input id="customerName" class="input" placeholder="如：张三" />
+          </label>
+          <label class="field">
+            <span class="label">联系电话</span>
+            <input id="phone" class="input" inputmode="tel" placeholder="如：138****8888" />
+          </label>
+          <label class="field">
+            <span class="label">报价日期</span>
+            <input id="quoteDate" class="input" type="date" />
+          </label>
+          <label class="field">
+            <span class="label">单号（可选）</span>
+            <input id="orderNo" class="input" placeholder="如：DG-2025-001" />
+          </label>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn ghost" id="resetBtn">清空内容</button>
+        <button class="btn" id="printBtn">打印</button>
+        <button class="btn" id="importBtn">导入配置</button>
+        <button class="btn" id="exportBtn">导出配置</button>
+        <button class="btn accent" id="pngBtn">导出 PNG（美化）</button>
+        <button class="btn primary" id="pdfBtn">导出 PDF（美化）</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none" />
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-idx">#</th>
+              <th class="col-name">配件</th>
+              <th class="col-model">型号 / 规格 / 备注</th>
+              <th class="col-price">单价（¥）</th>
+              <th class="col-qty">数量</th>
+              <th class="col-subtotal">合计（¥）</th>
+            </tr>
+          </thead>
+          <tbody id="itemsBody">
+            <!-- 将由 JS 渲染 -->
+          </tbody>
+        </table>
+
+        <div class="summary-bar">
+          <div class="sum-left">
+            <span>项目数：<strong id="itemCount">0</strong></span>
+            <span>已选项目：<strong id="selectedCount">0</strong></span>
+            <span>总件数：<strong id="pieceCount">0</strong></span>
+            <span class="hint">数量为 0 或空值不会进入导出</span>
+          </div>
+          <div class="sum-right" id="grandTotal">¥0.00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPORT TEMPLATE (off-screen, but visible to canvas) -->
+  <div id="exportRoot" class="export-root" style="display:none"></div>
+
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <script>
+    // =================== 数据与行渲染 ===================
+    const PRESETS = [
+      "处理器","主板","内存","显卡","机械硬盘","固态硬盘","电源","散热器","机箱","显示器","键盘","鼠标","其他"
+    ];
+    const itemsBody = document.getElementById('itemsBody');
+
+    function renderRows(){
+      itemsBody.innerHTML = '';
+      PRESETS.forEach((name, i) => {
+        const tr = document.createElement('tr');
+        tr.dataset.item = name;
+        tr.innerHTML = `
+          <td class="col-idx">${i+1}</td>
+          <td class="col-name">
+            <span class="icon-cell">
+              <span class="icon">${getIcon(name,'#7feeda')}</span>${name}
+            </span>
+          </td>
+          <td><input class="pill" placeholder="${getPlaceholder(name)}" /></td>
+          <td>
+            <div class="price-wrap">
+              <span class="prefix">¥</span>
+              <input class="pill num price" data-type="price" placeholder="0.00" inputmode="decimal" />
+            </div>
+          </td>
+          <td><input class="pill num qty" data-type="qty" type="number" min="0" step="1" value="${name==='内存' ? 2 : 1}" /></td>
+          <td class="col-subtotal"><strong data-role="rowTotal">¥0.00</strong></td>
+        `;
+        itemsBody.appendChild(tr);
+      });
+      document.getElementById('itemCount').textContent = PRESETS.length;
+    }
+
+    function getPlaceholder(name){
+      switch(name){
+        case "处理器": return "如：Intel i5-13400F / AMD R5 5600";
+        case "主板": return "如：B760M / B550M / X670";
+        case "内存": return "如：16GB DDR4 3200（可填套条）";
+        case "显卡": return "如：RTX 4060 / RX 6700 XT";
+        case "机械硬盘": return "如：2TB 7200RPM";
+        case "固态硬盘": return "如：1TB NVMe Gen4";
+        case "电源": return "如：650W 金牌 全模组";
+        case "散热器": return "如：240 一体水冷 / 塔式风冷";
+        case "机箱": return "如：ATX / M-ATX 带风扇";
+        case "显示器": return "如：27\" 2K 165Hz IPS";
+        case "键盘": return "如：87键 热插拔 茶轴";
+        case "鼠标": return "如：无线 3395 轻量化";
+        default: return "如：系统安装 / 延保 / 理线";
+      }
+    }
+
+    // =================== SVG 图标（赛博风线条） ===================
+    function getIcon(name, stroke="#7feeda"){
+      const s = `stroke="${stroke}" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
+      switch(name){
+        case "处理器": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="6" y="6" width="12" height="12" rx="2"/><path ${s} d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>`;
+        case "主板": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="3" y="3" width="18" height="18" rx="2"/><rect ${s} x="7" y="7" width="6" height="6"/><path ${s} d="M17 7v6M15 15h4M7 17h6"/></svg>`;
+        case "内存": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="3" y="8" width="18" height="8" rx="2"/><path ${s} d="M6 8v8M10 8v8M14 8v8M18 8v8"/></svg>`;
+        case "显卡": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="3" y="6" width="14" height="12" rx="2"/><circle ${s} cx="16.5" cy="12" r="3.5"/><path ${s} d="M17 6h4v12h-4"/></svg>`;
+        case "机械硬盘": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="5" y="4" width="14" height="16" rx="2"/><circle ${s} cx="12" cy="10" r="4"/><circle ${s} cx="12" cy="10" r="1"/><path ${s} d="M12 14v4"/></svg>`;
+        case "固态硬盘": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="4" y="7" width="16" height="10" rx="2"/><path ${s} d="M7 10h3M7 13h6M17 10v6"/></svg>`;
+        case "电源": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="4" y="6" width="16" height="12" rx="2"/><path ${s} d="M8 12h4l-2 4M17 9v6"/></svg>`;
+        case "散热器": return `<svg class="icon" viewBox="0 0 24 24"><circle ${s} cx="12" cy="12" r="4"/><path ${s} d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2.1 2.1M17.4 17.4l2.1 2.1M19.5 4.5l-2.1 2.1M6.6 17.4l-2.1 2.1"/></svg>`;
+        case "机箱": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="6" y="3" width="12" height="18" rx="2"/><path ${s} d="M9 7h6M9 10h6M9 18h6"/></svg>`;
+        case "显示器": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="3" y="4" width="18" height="12" rx="2"/><path ${s} d="M8 20h8M12 16v4"/></svg>`;
+        case "键盘": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="3" y="7" width="18" height="10" rx="2"/><path ${s} d="M5 9h2M8 9h2M11 9h2M14 9h2M17 9h2M5 12h10M16 12h3"/></svg>`;
+        case "鼠标": return `<svg class="icon" viewBox="0 0 24 24"><rect ${s} x="8" y="3" width="8" height="18" rx="4"/><path ${s} d="M12 3v5"/></svg>`;
+        default: return `<svg class="icon" viewBox="0 0 24 24"><path ${s} d="M4 6h16M4 12h16M4 18h16"/></svg>`;
+      }
+    }
+
+    // =================== 数字/金额 ===================
+    function toHalfWidth(str){ return String(str||'').replace(/[\uFF10-\uFF19\uFF0E\uFF0D]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)); }
+    function parsePrice(raw){
+      const s = toHalfWidth(raw).replace(/[￥¥元,\s]/g,'').replace(/[^\d.\-]/g,'');
+      const n = parseFloat(s);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function parseQty(raw){
+      const n = Math.floor(parsePrice(raw));
+      return Math.max(0, Number.isFinite(n) ? n : 0);
+    }
+    function money(n){
+      const s = (Math.round(n*100)/100).toFixed(2);
+      return '¥' + s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    // =================== 计算 ===================
+    function recalcAll(){
+      const rows = Array.from(itemsBody.querySelectorAll('tr'));
+      let total = 0, pieceCount = 0, selected = 0;
+      rows.forEach(tr => {
+        const priceInput = tr.querySelector('.price');
+        const qtyInput = tr.querySelector('.qty');
+        const rowTotalEl = tr.querySelector('[data-role="rowTotal"]');
+
+        const price = parsePrice(priceInput.value);
+        const qty = parseQty(qtyInput.value);
+
+        if (priceInput.value.trim()!=='' && price<0) priceInput.classList.add('invalid'); else priceInput.classList.remove('invalid');
+        if (qtyInput.value.trim()!=='' && parseFloat(qtyInput.value)<0) qtyInput.classList.add('invalid'); else qtyInput.classList.remove('invalid');
+
+        const rowTotal = qty>0 ? price*qty : 0;
+        rowTotalEl.textContent = money(rowTotal);
+
+        total += rowTotal;
+        pieceCount += qty;
+        if (qty>0 && (tr.querySelector('td:nth-child(3) input').value.trim()!=='' || price>0)) selected++;
+      });
+      document.getElementById('grandTotal').textContent = money(total);
+      document.getElementById('pieceCount').textContent = pieceCount;
+      document.getElementById('selectedCount').textContent = selected;
+    }
+
+    function bindRealtime(){
+      const rerun = ()=>recalcAll();
+      itemsBody.addEventListener('input', rerun, true);
+      itemsBody.addEventListener('change', rerun, true);
+      itemsBody.addEventListener('blur', (e)=>{
+        const t = e.target;
+        if (t && t.classList.contains('price')){
+          const v = parsePrice(t.value);
+          t.value = v ? v.toFixed(2) : '';
+        }
+      }, true);
+    }
+
+    // =================== 导入导出配置（JSON） ===================
+    function collectData(){
+      const rows = Array.from(itemsBody.querySelectorAll('tr'));
+      return {
+        meta: {
+          storeName: document.getElementById('storeName').value || '',
+          customerName: document.getElementById('customerName').value || '',
+          phone: document.getElementById('phone').value || '',
+          quoteDate: document.getElementById('quoteDate').value || '',
+          orderNo: document.getElementById('orderNo').value || ''
+        },
+        items: rows.map(tr => {
+          const name = tr.dataset.item;
+          const model = tr.querySelector('td:nth-child(3) input').value || '';
+          const price = parsePrice(tr.querySelector('.price').value);
+          const qty = parseQty(tr.querySelector('.qty').value);
+          return { name, model, price, qty };
+        })
+      };
+    }
+
+    function applyData(data){
+      if (!data) return;
+      if (data.meta){
+        document.getElementById('storeName').value = data.meta.storeName || '';
+        document.getElementById('customerName').value = data.meta.customerName || '';
+        document.getElementById('phone').value = data.meta.phone || '';
+        document.getElementById('quoteDate').value = data.meta.quoteDate || '';
+        document.getElementById('orderNo').value = data.meta.orderNo || '';
+      }
+      if (Array.isArray(data.items)){
+        // 将传入 items 映射回预设行
+        const map = new Map(data.items.map(it=>[it.name, it]));
+        Array.from(itemsBody.querySelectorAll('tr')).forEach(tr=>{
+          const nm = tr.dataset.item;
+          const it = map.get(nm);
+          const modelInput = tr.querySelector('td:nth-child(3) input');
+          const priceInput = tr.querySelector('.price');
+          const qtyInput = tr.querySelector('.qty');
+          if (it){
+            modelInput.value = it.model || '';
+            priceInput.value = (it.price || it.price===0) ? String(it.price) : '';
+            qtyInput.value = (it.qty || it.qty===0) ? String(it.qty) : (nm==='内存'? 2:1);
+          }else{
+            modelInput.value = '';
+            priceInput.value = '';
+            qtyInput.value = (nm==='内存'? 2:1);
+          }
+        });
+      }
+      recalcAll();
+    }
+
+    function downloadJSON(filename, obj){
+      const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // =================== 美化导出模板 ===================
+    function buildExportHTML(data){
+      const validItems = (data.items||[]).filter(it => {
+        const hasContent = (it.model && it.model.trim()!=='') || (it.price > 0);
+        return it.qty > 0 && hasContent;
+      });
+
+      const total = validItems.reduce((s, it)=> s + it.price*it.qty, 0);
+      const rowsHTML = validItems.map((it, idx) => `
+        <tr>
+          <td class="ex-col-idx">${idx+1}</td>
+          <td class="ex-col-item">
+            <img class="ex-item-icon" src="data:image/svg+xml;utf8,${encodeURIComponent(getIcon(it.name, '#7feeda').replace('<svg','<svg xmlns=%22http://www.w3.org/2000/svg%22'))}" />
+            ${it.name}
+          </td>
+          <td class="ex-col-model">${escapeHTML(it.model || '')}</td>
+          <td class="ex-col-price">${money(it.price)}</td>
+          <td class="ex-col-qty">${it.qty}</td>
+          <td class="ex-col-sub">${money(it.price * it.qty)}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <div class="ex-header">
+          <div>
+            <div class="ex-title">
+              <span class="logo-mark">CYBER</span>
+              <h2>电脑组装配置单</h2>
+              <span class="ex-badge">Neon</span>
+            </div>
+            <div class="ex-meta">
+              <div><span class="k">门店：</span>${escapeHTML(data.meta.storeName || '—')}</div>
+              <div><span class="k">客户：</span>${escapeHTML(data.meta.customerName || '—')}</div>
+              <div><span class="k">电话：</span>${escapeHTML(data.meta.phone || '—')}</div>
+              <div><span class="k">日期：</span>${escapeHTML(data.meta.quoteDate || '—')}</div>
+              <div><span class="k">单号：</span>${escapeHTML(data.meta.orderNo || '—')}</div>
+              <div><span class="k">项目数：</span>${validItems.length}</div>
+            </div>
+          </div>
+        </div>
+
+        <table class="ex-table">
+          <thead>
+            <tr>
+              <th class="ex-col-idx">#</th>
+              <th class="ex-col-item">配件</th>
+              <th class="ex-col-model">型号 / 规格 / 备注</th>
+              <th class="ex-col-price">单价</th>
+              <th class="ex-col-qty">数量</th>
+              <th class="ex-col-sub">合计</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHTML || `<tr><td colspan="6" style="text-align:center;color:#9db4da;padding:24px">暂无有效项目</td></tr>`}
+          </tbody>
+        </table>
+
+        <div class="ex-summary">
+          <div class="ex-note">注：仅导出数量>0 且型号或价格已填写的项目；价格单位为人民币。</div>
+          <div class="ex-total">总价：${money(total)}</div>
+        </div>
+      `;
+    }
+
+    function escapeHTML(s){
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // =================== 导出 PNG / PDF（基于美化模板） ===================
+    async function exportPNG(){
+      const data = collectData();
+      const root = document.getElementById('exportRoot');
+      root.innerHTML = buildExportHTML(data);
+      root.style.display = 'block';
+      await new Promise(r=>setTimeout(r, 50));
+      const canvas = await html2canvas(root, { backgroundColor:'#0a0e1a', scale:2 });
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = url; a.download = buildFileName('美化配置单','png'); document.body.appendChild(a); a.click(); a.remove();
+      root.style.display = 'none';
+    }
+
+    async function exportPDF(){
+      const { jsPDF } = window.jspdf;
+      const data = collectData();
+      const root = document.getElementById('exportRoot');
+      root.innerHTML = buildExportHTML(data);
+      root.style.display = 'block';
+      await new Promise(r=>setTimeout(r, 50));
+
+      const canvas = await html2canvas(root, { backgroundColor:'#0a0e1a', scale:2 });
+      const imgData = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const margin = 8;
+      const usableW = pageW - margin*2;
+      const imgW = usableW;
+      const imgH = imgW * (canvas.height / canvas.width);
+
+      let heightLeft = imgH;
+      let position = margin;
+
+      pdf.addImage(imgData, 'PNG', margin, position, imgW, imgH);
+      heightLeft -= (pageH - margin*2);
+
+      while (heightLeft > 0) {
+        pdf.addPage();
+        position = (heightLeft - imgH) + margin; // offset 裁剪分页
+        pdf.addImage(imgData, 'PNG', margin, position, imgW, imgH);
+        heightLeft -= (pageH - margin*2);
+      }
+      pdf.save(buildFileName('美化配置单','pdf'));
+      root.style.display = 'none';
+    }
+
+    function buildFileName(suffix, ext){
+      const g = id => (document.getElementById(id).value || '').replace(/[\\\/:*?"<>|]/g,'').trim();
+      const store = g('storeName') || '门店';
+      const customer = g('customerName') || '客户';
+      const date = (document.getElementById('quoteDate').value || '').replaceAll('-','');
+      const parts = [store, customer, date, suffix].filter(Boolean);
+      return parts.join('-') + '.' + ext;
+    }
+
+    // =================== 事件与初始化 ===================
+    (function init(){
+      renderRows();
+      bindRealtime();
+      const d = new Date();
+      const pad = n => String(n).padStart(2,'0');
+      const today = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+      if (!document.getElementById('quoteDate').value) document.getElementById('quoteDate').value = today;
+
+      document.getElementById('resetBtn').addEventListener('click', ()=>{
+        Array.from(itemsBody.querySelectorAll('tr')).forEach((tr, idx)=>{
+          tr.querySelector('td:nth-child(3) input').value = '';
+          tr.querySelector('.price').value = '';
+          tr.querySelector('.qty').value = (PRESETS[idx]==='内存') ? 2 : 1;
+          tr.querySelectorAll('.invalid').forEach(el=>el.classList.remove('invalid'));
+        });
+        recalcAll();
+      });
+      document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+      document.getElementById('pngBtn').addEventListener('click', exportPNG);
+      document.getElementById('pdfBtn').addEventListener('click', exportPDF);
+
+      // 导出配置（JSON）
+      document.getElementById('exportBtn').addEventListener('click', ()=>{
+        const data = collectData();
+        const name = buildFileName('配置数据','json');
+        downloadJSON(name, data);
+      });
+
+      // 导入配置（JSON）
+      const importFile = document.getElementById('importFile');
+      document.getElementById('importBtn').addEventListener('click', ()=>importFile.click());
+      importFile.addEventListener('change', (e)=>{
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const obj = JSON.parse(reader.result);
+            applyData(obj);
+          } catch (err){
+            alert('配置文件格式不正确，请选择导出的 JSON 文件。');
+          } finally {
+            importFile.value = '';
+          }
+        };
+        reader.readAsText(file, 'utf-8');
+      });
+
+      recalcAll();
+    })();
+  </script>
+        <!-- 
+        ========================================
+        步骤2: 将您原HTML文件 <body> 标签内的所有内容放在这里
+        ========================================
+        -->
+        
+    </div>
+
+    <script>
+        // 密码验证函数
+        function checkPassword() {
+            const input = document.getElementById('password-input');
+            const password = input.value;
+            const errorMsg = document.getElementById('error-message');
+            
+            // 正确密码是 "1"
+            if (password === '1') {
+                // 密码正确，显示实际内容
+                document.getElementById('password-protection').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                errorMsg.textContent = '';
+            } else if (password.length < 6) {
+                // 少于6位的提示
+                errorMsg.textContent = '❌ 密码至少为6位';
+            } else {
+                // 大于等于6位但错误的提示
+                errorMsg.textContent = '❌ 密码错误';
+            }
+        }
+        
+        // 支持按回车键提交
+        document.getElementById('password-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                checkPassword();
+            }
+        });
+    </script>
+    
+    <!-- 
+    ========================================
+    步骤3: 如果您原HTML文件底部有 <script> 标签，放在这里
+    ========================================
+    -->
+
+</body>
+</html>
