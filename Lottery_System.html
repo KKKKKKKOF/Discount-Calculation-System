@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽奖系统</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --info-color: #4299e1;
+            --dark-color: #2d3748;
+            --light-color: #f7fafc;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            --gradient-warning: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            animation: fadeIn 1s ease;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 25px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--primary-color);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-xl);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--gradient-success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--gradient-warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: var(--gradient-primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: var(--gradient-primary);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: #f7fafc;
+        }
+
+        .lottery-display {
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            padding: 40px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lottery-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            z-index: 2;
+        }
+
+        .lottery-prize {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            z-index: 2;
+        }
+
+        .lottery-names {
+            font-size: 3rem;
+            font-weight: 700;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            z-index: 2;
+        }
+
+        .lottery-name-item {
+            background: rgba(255,255,255,0.2);
+            padding: 20px 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .lottery-name-item.rolling {
+            animation: nameRoll 0.1s ease-in-out;
+        }
+
+        .lottery-name-item .name {
+            font-size: 3rem;
+            margin-bottom: 5px;
+        }
+
+        .lottery-name-item .employee-id {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        @keyframes nameRoll {
+            0% {
+                transform: translateY(-10px);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateY(5px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            position: absolute;
+            animation: confetti-fall 3s linear;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(400px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .lottery-controls {
+            margin-top: 30px;
+            z-index: 2;
+        }
+
+        .lottery-settings {
+            margin-top: 20px;
+            z-index: 2;
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .setting-input {
+            width: 120px;
+            padding: 8px 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.9);
+            color: var(--dark-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            animation: scaleIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--dark-color);
+        }
+
+        .close-btn {
+            font-size: 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--dark-color);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #f7fafc;
+            transform: rotate(90deg);
+        }
+
+        .lottery-config-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .lottery-config-item {
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .lottery-config-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .lottery-config-item.completed {
+            background: #f0fff4;
+            border-color: var(--success-color);
+        }
+
+        .config-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .config-item-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .badge-info {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .participants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .participant-card {
+            padding: 15px;
+            background: var(--light-color);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .participant-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .participant-name {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+
+        .participant-info {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-text {
+            font-size: 1.2rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinning {
+            animation: spin 0.1s linear infinite;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .lottery-title {
+                font-size: 1.8rem;
+            }
+
+            .lottery-prize {
+                font-size: 1.5rem;
+            }
+
+            .lottery-names {
+                font-size: 2rem;
+            }
+
+            .lottery-name-item .name {
+                font-size: 2rem;
+            }
+
+            .lottery-name-item .employee-id {
+                font-size: 1rem;
+            }
+
+            .tab-btn {
+                min-width: 120px;
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+
+            .participants-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .setting-input {
+                width: 100%;
+            }
+        }
+
+        .icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+        }
+
+        .winner-announcement {
+            animation: winnerBounce 0.6s ease;
+        }
+
+        @keyframes winnerBounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.1);
+            }
+            50% {
+                transform: scale(0.95);
+            }
+            75% {
+                transform: scale(1.05);
+            }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .delete-btn {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #e53e3e;
+            transform: scale(1.05);
+        }
+
+        .edit-btn {
+            background: var(--info-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin-right: 5px;
+        }
+
+        .edit-btn:hover {
+            background: #3182ce;
+            transform: scale(1.05);
+        }
+
+        .winner-detail {
+            display: inline-block;
+            margin-right: 15px;
+            padding: 5px 10px;
+            background: rgba(72, 187, 120, 0.2);
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 抽 奖 系 统 🎉</h1>
+            <p>让每次抽奖都充满期待与惊喜，愿世间好运与美好皆伴随于你</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('participants')">👥 人员管理</button>
+            <button class="tab-btn" onclick="switchTab('lottery')">🎯 抽奖设置</button>
+            <button class="tab-btn" onclick="switchTab('draw')">🎊 开始抽奖</button>
+            <button class="tab-btn" onclick="switchTab('records')">📊 抽奖记录</button>
+        </div>
+
+        <!-- 人员管理 -->
+        <div id="participants" class="tab-content active">
+            <div class="card">
+                <h2 class="card-title">人员管理</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalParticipants">0</div>
+                        <div class="stat-label">总人数</div>
+                    </div>
+                    <div class="stat-card" style="background: var(--gradient-success);">
+                        <div class="stat-number" id="availableParticipants">0</div>
+                        <div class="stat-label">可抽奖人数</div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="handleDownloadTemplate()">
+                        📥 下载模板
+                    </button>
+                    <button class="btn btn-success" onclick="handleUploadExcel()">
+                        📤 上传表格
+                    </button>
+                    <button class="btn btn-warning" onclick="handleAddParticipant()">
+                        ➕ 手动添加
+                    </button>
+                    <button class="btn btn-danger" onclick="handleClearParticipants()">
+                        🗑️ 清空人员
+                    </button>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label class="form-label">
+                        <input type="checkbox" id="allowRepeat" onchange="saveSettings()">
+                        允许重复中奖（同一人可在不同轮次中多次中奖）
+                    </label>
+                </div>
+
+                <div class="participants-grid" id="participantsGrid">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">暂无人员，请添加抽奖人员</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 抽奖设置 -->
+        <div id="lottery" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">抽奖设置</h2>
+                <button class="btn btn-primary" onclick="openLotteryConfigModal()">
+                    ➕ 添加抽奖轮次
+                </button>
+
+                <div class="lottery-config-list" id="lotteryConfigList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎯</div>
+                        <div class="empty-state-text">暂无抽奖设置，请添加抽奖轮次</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 开始抽奖 -->
+        <div id="draw" class="tab-content">
+            <div class="card">
+                <div id="currentLotteryDisplay">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎊</div>
+                        <div class="empty-state-text">请先设置抽奖信息</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 抽奖记录 -->
+        <div id="records" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">抽奖记录</h2>
+                
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="handleExportRecords()">
+                        📥 导出记录
+                    </button>
+                    <button class="btn btn-primary" onclick="handleImportRecords()">
+                        📤 导入记录
+                    </button>
+                    <button class="btn btn-danger" onclick="handleClearRecords()">
+                        🗑️ 清空记录
+                    </button>
+                </div>
+
+                <div id="recordsList" style="margin-top: 20px;">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <div class="empty-state-text">暂无抽奖记录</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加人员模态框 -->
+    <div class="modal" id="addParticipantModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">添加抽奖人员</h3>
+                <button class="close-btn" onclick="closeModal('addParticipantModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">姓名 *</label>
+                <input type="text" class="form-input" id="participantName" placeholder="请输入姓名">
+            </div>
+            <div class="form-group">
+                <label class="form-label">部门</label>
+                <input type="text" class="form-input" id="participantDept" placeholder="请输入部门">
+            </div>
+            <div class="form-group">
+                <label class="form-label">工号</label>
+                <input type="text" class="form-input" id="participantId" placeholder="请输入工号">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="addParticipant()">确认添加</button>
+                <button class="btn btn-outline" onclick="closeModal('addParticipantModal')">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 抽奖配置模态框 -->
+    <div class="modal" id="lotteryConfigModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="lotteryConfigModalTitle">添加抽奖轮次</h3>
+                <button class="close-btn" onclick="closeModal('lotteryConfigModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">抽奖标题 *</label>
+                <input type="text" class="form-input" id="lotteryTitle" placeholder="例如：年会抽奖">
+            </div>
+            <div class="form-group">
+                <label class="form-label">抽奖等级</label>
+                <input type="text" class="form-input" id="lotteryLevel" placeholder="例如：一等奖、二等奖">
+            </div>
+            <div class="form-group">
+                <label class="form-label">奖品内容</label>
+                <input type="text" class="form-input" id="lotteryPrize" placeholder="例如：iPhone 15 Pro">
+            </div>
+            <div class="form-group">
+                <label class="form-label">中奖人数 *</label>
+                <input type="number" class="form-input" id="lotteryCount" placeholder="请输入中奖人数" min="1" value="1">
+            </div>
+            <div class="form-group">
+                <label class="form-label">备注</label>
+                <input type="text" class="form-input" id="lotteryRemark" placeholder="其他说明">
+            </div>
+            <input type="hidden" id="editingLotteryIndex" value="-1">
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="saveLotteryConfig()">保存</button>
+                <button class="btn btn-outline" onclick="closeModal('lotteryConfigModal')">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据存储
+        let participants = [];
+        let lotteryConfigs = [];
+        let lotteryRecords = [];
+        let currentLotteryIndex = 0;
+        let isDrawing = false;
+        let drawInterval = null;
+        let autoStopTimeout = null;
+        let drawDuration = 5; // 默认5秒
+
+        // 初始化
+        window.onload = function() {
+            loadData();
+            updateUI();
+        };
+
+        // 标签切换
+        function switchTab(tabName) {
+            // 隐藏所有标签内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // 显示选中的标签
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // 如果切换到抽奖页面，刷新显示
+            if (tabName === 'draw') {
+                updateDrawDisplay();
+            }
+        }
+
+        // ========== 重构的人员管理按钮处理函数 ==========
+
+        // 处理下载模板
+        function handleDownloadTemplate() {
+            const template = [
+                ['姓名', '部门', '工号'],
+                ['张三', '技术部', '001'],
+                ['李四', '市场部', '002'],
+                ['王五', '人事部', '003']
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(template);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "人员名单");
+            XLSX.writeFile(wb, "抽奖人员模板.xlsx");
+
+            showNotification('模板下载成功！', 'success');
+        }
+
+        // 处理上传表格
+        function handleUploadExcel() {
+            // 动态创建文件选择input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx,.xls';
+            input.style.display = 'none';
+            
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (!file) {
+                    document.body.removeChild(input);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                        // 跳过表头
+                        let importCount = 0;
+                        for (let i = 1; i < jsonData.length; i++) {
+                            const row = jsonData[i];
+                            if (row[0]) { // 至少要有姓名
+                                participants.push({
+                                    name: row[0] || '',
+                                    department: row[1] || '',
+                                    employeeId: row[2] || '',
+                                    won: false
+                                });
+                                importCount++;
+                            }
+                        }
+
+                        saveData();
+                        updateUI();
+                        showNotification(`成功导入 ${importCount} 位人员！`, 'success');
+                    } catch (error) {
+                        showNotification('文件解析失败，请检查文件格式！', 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+                
+                // 读取完成后移除input元素
+                document.body.removeChild(input);
+            };
+            
+            // 添加到body并触发点击
+            document.body.appendChild(input);
+            input.click();
+        }
+
+        // 处理手动添加人员
+        function handleAddParticipant() {
+            openAddParticipantModal();
+        }
+
+        // 处理清空人员
+        function handleClearParticipants() {
+            if (confirm('确定要清空所有人员吗？此操作不可恢复！')) {
+                participants = [];
+                saveData();
+                updateUI();
+                showNotification('已清空所有人员！', 'success');
+            }
+        }
+
+        // 打开添加人员模态框
+        function openAddParticipantModal() {
+            document.getElementById('participantName').value = '';
+            document.getElementById('participantDept').value = '';
+            document.getElementById('participantId').value = '';
+            openModal('addParticipantModal');
+        }
+
+        // 添加人员
+        function addParticipant() {
+            const name = document.getElementById('participantName').value.trim();
+            const department = document.getElementById('participantDept').value.trim();
+            const employeeId = document.getElementById('participantId').value.trim();
+
+            if (!name) {
+                showNotification('请输入姓名！', 'error');
+                return;
+            }
+
+            participants.push({
+                name,
+                department,
+                employeeId,
+                won: false
+            });
+
+            saveData();
+            updateUI();
+            closeModal('addParticipantModal');
+            showNotification('添加成功！', 'success');
+        }
+
+        // 删除人员
+        function deleteParticipant(index) {
+            if (confirm('确定要删除该人员吗？')) {
+                participants.splice(index, 1);
+                saveData();
+                updateUI();
+                showNotification('删除成功！', 'success');
+            }
+        }
+
+        // 打开抽奖配置模态框
+        function openLotteryConfigModal(index = -1) {
+            if (index >= 0) {
+                // 编辑模式
+                const config = lotteryConfigs[index];
+                document.getElementById('lotteryConfigModalTitle').textContent = '编辑抽奖轮次';
+                document.getElementById('lotteryTitle').value = config.title;
+                document.getElementById('lotteryLevel').value = config.level || '';
+                document.getElementById('lotteryPrize').value = config.prize || '';
+                document.getElementById('lotteryCount').value = config.count;
+                document.getElementById('lotteryRemark').value = config.remark || '';
+                document.getElementById('editingLotteryIndex').value = index;
+            } else {
+                // 新增模式
+                document.getElementById('lotteryConfigModalTitle').textContent = '添加抽奖轮次';
+                document.getElementById('lotteryTitle').value = '';
+                document.getElementById('lotteryLevel').value = '';
+                document.getElementById('lotteryPrize').value = '';
+                document.getElementById('lotteryCount').value = '1';
+                document.getElementById('lotteryRemark').value = '';
+                document.getElementById('editingLotteryIndex').value = '-1';
+            }
+            openModal('lotteryConfigModal');
+        }
+
+        // 保存抽奖配置
+        function saveLotteryConfig() {
+            const title = document.getElementById('lotteryTitle').value.trim();
+            const level = document.getElementById('lotteryLevel').value.trim();
+            const prize = document.getElementById('lotteryPrize').value.trim();
+            const count = parseInt(document.getElementById('lotteryCount').value);
+            const remark = document.getElementById('lotteryRemark').value.trim();
+            const editingIndex = parseInt(document.getElementById('editingLotteryIndex').value);
+
+            if (!title) {
+                showNotification('请输入抽奖标题！', 'error');
+                return;
+            }
+
+            if (!count || count < 1) {
+                showNotification('请输入有效的中奖人数！', 'error');
+                return;
+            }
+
+            const config = {
+                title,
+                level,
+                prize,
+                count,
+                remark,
+                completed: false,
+                winners: []
+            };
+
+            if (editingIndex >= 0) {
+                // 保留已有的中奖记录
+                config.completed = lotteryConfigs[editingIndex].completed;
+                config.winners = lotteryConfigs[editingIndex].winners;
+                lotteryConfigs[editingIndex] = config;
+                showNotification('修改成功！', 'success');
+            } else {
+                lotteryConfigs.push(config);
+                showNotification('添加成功！', 'success');
+            }
+
+            saveData();
+            updateUI();
+            closeModal('lotteryConfigModal');
+        }
+
+        // 删除抽奖配置
+        function deleteLotteryConfig(index) {
+            if (confirm('确定要删除该抽奖轮次吗？')) {
+                lotteryConfigs.splice(index, 1);
+                if (currentLotteryIndex >= lotteryConfigs.length) {
+                    currentLotteryIndex = Math.max(0, lotteryConfigs.length - 1);
+                }
+                saveData();
+                updateUI();
+                showNotification('删除成功！', 'success');
+            }
+        }
+
+        // 更新抽奖时长
+        function updateDrawDuration() {
+            const input = document.getElementById('drawDurationInput');
+            const value = parseFloat(input.value);
+            if (value > 0) {
+                drawDuration = value;
+                localStorage.setItem('drawDuration', drawDuration);
+            } else {
+                input.value = drawDuration;
+                showNotification('请输入有效的秒数！', 'error');
+            }
+        }
+
+        // 开始抽奖
+        function startDraw() {
+            if (isDrawing) return;
+
+            const config = lotteryConfigs[currentLotteryIndex];
+            if (!config) {
+                showNotification('请先设置抽奖信息！', 'error');
+                return;
+            }
+
+            if (config.completed) {
+                showNotification('该轮次已完成抽奖！', 'warning');
+                return;
+            }
+
+            const allowRepeat = document.getElementById('allowRepeat').checked;
+            const availableParticipants = participants.filter(p => allowRepeat || !p.won);
+
+            if (availableParticipants.length === 0) {
+                showNotification('没有可抽奖的人员！', 'error');
+                return;
+            }
+
+            if (availableParticipants.length < config.count) {
+                showNotification(`可抽奖人数不足！当前可抽：${availableParticipants.length}人`, 'error');
+                return;
+            }
+
+            isDrawing = true;
+            
+            // 先更新显示（显示停止按钮）
+            updateDrawDisplay();
+            
+            // 然后获取名字显示区域元素
+            const namesDisplay = document.getElementById('drawNames');
+            
+            if (!namesDisplay) {
+                console.error('找不到 drawNames 元素');
+                isDrawing = false;
+                return;
+            }
+
+            drawInterval = setInterval(() => {
+                // 随机显示名字
+                const randomParticipants = [];
+                for (let i = 0; i < config.count; i++) {
+                    const randomIndex = Math.floor(Math.random() * availableParticipants.length);
+                    randomParticipants.push(availableParticipants[randomIndex]);
+                }
+
+                namesDisplay.innerHTML = randomParticipants.map(p => 
+                    `<div class="lottery-name-item rolling">
+                        <div class="name">${p.name}</div>
+                        ${p.employeeId ? `<div class="employee-id">工号: ${p.employeeId}</div>` : ''}
+                    </div>`
+                ).join('');
+            }, 100);
+
+            // 设置自动停止
+            autoStopTimeout = setTimeout(() => {
+                stopDraw();
+            }, drawDuration * 1000);
+        }
+
+        // 停止抽奖
+        function stopDraw() {
+            if (!isDrawing) return;
+
+            // 清除定时器
+            if (drawInterval) {
+                clearInterval(drawInterval);
+                drawInterval = null;
+            }
+            if (autoStopTimeout) {
+                clearTimeout(autoStopTimeout);
+                autoStopTimeout = null;
+            }
+
+            const config = lotteryConfigs[currentLotteryIndex];
+            const allowRepeat = document.getElementById('allowRepeat').checked;
+            const availableParticipants = participants.filter(p => allowRepeat || !p.won);
+
+            // 随机选择中奖者
+            const winners = [];
+            const tempParticipants = [...availableParticipants];
+
+            for (let i = 0; i < config.count; i++) {
+                const randomIndex = Math.floor(Math.random() * tempParticipants.length);
+                winners.push(tempParticipants[randomIndex]);
+                tempParticipants.splice(randomIndex, 1);
+            }
+
+            // 显示中奖者
+            const namesDisplay = document.getElementById('drawNames');
+            if (namesDisplay) {
+                namesDisplay.innerHTML = winners.map(p => 
+                    `<div class="lottery-name-item winner-announcement">
+                        <div class="name">${p.name}</div>
+                        ${p.employeeId ? `<div class="employee-id">工号: ${p.employeeId}</div>` : ''}
+                    </div>`
+                ).join('');
+            }
+
+            // 添加彩带效果
+            createConfetti();
+
+            // 标记中奖
+            winners.forEach(winner => {
+                const participant = participants.find(p => 
+                    p.name === winner.name && 
+                    p.department === winner.department && 
+                    p.employeeId === winner.employeeId
+                );
+                if (participant) {
+                    participant.won = true;
+                }
+            });
+
+            // 保存中奖记录
+            config.winners = winners;
+            config.completed = true;
+
+            lotteryRecords.push({
+                timestamp: new Date().toISOString(),
+                title: config.title,
+                level: config.level,
+                prize: config.prize,
+                count: config.count,
+                winners: winners
+            });
+
+            saveData();
+            updateUI();
+            isDrawing = false;
+
+            // 播放成功提示
+            showNotification('🎉 恭喜中奖！', 'success');
+
+            // 更新显示（不自动跳转）
+            updateDrawDisplay();
+        }
+
+        // 创建彩带效果
+        function createConfetti() {
+            const colors = ['#f56565', '#48bb78', '#4299e1', '#ed8936', '#9f7aea', '#f6ad55'];
+            const container = document.querySelector('.lottery-display');
+
+            if (!container) return;
+
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    container.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+        }
+
+        // 重置当前轮次
+        function resetCurrentDraw() {
+            if (!confirm('确定要重置当前轮次吗？')) return;
+
+            const config = lotteryConfigs[currentLotteryIndex];
+            if (!config) return;
+
+            // 取消中奖标记
+            if (config.winners) {
+                config.winners.forEach(winner => {
+                    const participant = participants.find(p => 
+                        p.name === winner.name && 
+                        p.department === winner.department && 
+                        p.employeeId === winner.employeeId
+                    );
+                    if (participant) {
+                        participant.won = false;
+                    }
+                });
+            }
+
+            config.completed = false;
+            config.winners = [];
+
+            // 删除对应的记录
+            lotteryRecords = lotteryRecords.filter(r => 
+                !(r.title === config.title && r.level === config.level && 
+                  r.timestamp === (config.recordTimestamp || ''))
+            );
+
+            saveData();
+            updateUI();
+            updateDrawDisplay();
+            showNotification('已重置当前轮次！', 'success');
+        }
+
+        // 切换到指定轮次
+        function switchToLottery(index) {
+            currentLotteryIndex = index;
+            updateDrawDisplay();
+            
+            // 查找并激活抽奖标签
+            const tabs = document.querySelectorAll('.tab-btn');
+            const drawTab = Array.from(tabs).find(tab => tab.textContent.includes('开始抽奖'));
+            if (drawTab) {
+                drawTab.click();
+            }
+        }
+
+        // 更新抽奖显示
+        function updateDrawDisplay() {
+            const container = document.getElementById('currentLotteryDisplay');
+            
+            if (lotteryConfigs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎊</div>
+                        <div class="empty-state-text">请先设置抽奖信息</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const config = lotteryConfigs[currentLotteryIndex];
+            const displayParts = [];
+
+            if (config.title) displayParts.push(config.title);
+            if (config.level) displayParts.push(config.level);
+
+            container.innerHTML = `
+                <div class="lottery-display">
+                    <div class="lottery-title">${displayParts.join(' - ')}</div>
+                    ${config.prize ? `<div class="lottery-prize">🎁 ${config.prize}</div>` : ''}
+                    <div class="lottery-names" id="drawNames">
+                        ${config.completed ? 
+                            config.winners.map(w => 
+                                `<div class="lottery-name-item">
+                                    <div class="name">${w.name}</div>
+                                    ${w.employeeId ? `<div class="employee-id">工号: ${w.employeeId}</div>` : ''}
+                                </div>`
+                            ).join('') :
+                            '<div style="font-size: 1.5rem; opacity: 0.8;">点击下方按钮开始抽奖</div>'
+                        }
+                    </div>
+                    
+                    ${!config.completed ? `
+                        <div class="lottery-settings">
+                            <div class="setting-item">
+                                <label class="setting-label">最大抽奖时长（秒）：</label>
+                                <input type="number" 
+                                       class="setting-input" 
+                                       id="drawDurationInput" 
+                                       value="${drawDuration}" 
+                                       min="1" 
+                                       step="0.5"
+                                       onchange="updateDrawDuration()"
+                                       ${isDrawing ? 'disabled' : ''}>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="lottery-controls">
+                        <div class="btn-group">
+                            ${!config.completed ? 
+                                (isDrawing ? 
+                                    `<button class="btn btn-danger" onclick="stopDraw()" style="font-size: 1.2rem; padding: 15px 40px;">
+                                        ⏹️ 停止抽奖
+                                    </button>` :
+                                    `<button class="btn btn-success" onclick="startDraw()" style="font-size: 1.2rem; padding: 15px 40px;">
+                                        🎲 开始抽奖
+                                    </button>`
+                                ) :
+                                `<button class="btn btn-warning" onclick="resetCurrentDraw()" style="font-size: 1.2rem; padding: 15px 40px;">
+                                    🔄 重新抽奖
+                                </button>`
+                            }
+                        </div>
+                    </div>
+                    ${lotteryConfigs.length > 1 ? `
+                        <div style="margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                            ${lotteryConfigs.map((cfg, idx) => `
+                                <button class="btn ${idx === currentLotteryIndex ? 'btn-primary' : 'btn-outline'}" 
+                                        onclick="switchToLottery(${idx})"
+                                        style="font-size: 0.9rem;">
+                                    ${cfg.title}${cfg.level ? ' - ' + cfg.level : ''} 
+                                    ${cfg.completed ? '✓' : ''}
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // ========== 重构的抽奖记录按钮处理函数 ==========
+        
+        // 处理导出记录
+        function handleExportRecords() {
+            if (lotteryRecords.length === 0) {
+                showNotification('暂无记录可导出！', 'warning');
+                return;
+            }
+
+            const dataStr = JSON.stringify({
+                records: lotteryRecords,
+                exportTime: new Date().toISOString()
+            }, null, 2);
+
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `抽奖记录_${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showNotification('记录导出成功！', 'success');
+        }
+
+        // 处理导入记录
+        function handleImportRecords() {
+            // 动态创建文件选择input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.style.display = 'none';
+            
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (!file) {
+                    document.body.removeChild(input);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.records && Array.isArray(data.records)) {
+                            lotteryRecords = data.records;
+                            saveData();
+                            updateUI();
+                            showNotification('记录导入成功！', 'success');
+                        } else {
+                            showNotification('文件格式错误！', 'error');
+                        }
+                    } catch (error) {
+                        showNotification('文件解析失败！', 'error');
+                    }
+                };
+                reader.readAsText(file);
+                
+                // 读取完成后移除input元素
+                document.body.removeChild(input);
+            };
+            
+            // 添加到body并触发点击
+            document.body.appendChild(input);
+            input.click();
+        }
+
+        // 处理清空记录
+        function handleClearRecords() {
+            if (confirm('确定要清空所有抽奖记录吗？此操作不可恢复！')) {
+                lotteryRecords = [];
+                
+                // 重置所有人员的中奖状态
+                participants.forEach(p => p.won = false);
+                
+                // 重置所有抽奖配置
+                lotteryConfigs.forEach(cfg => {
+                    cfg.completed = false;
+                    cfg.winners = [];
+                });
+
+                saveData();
+                updateUI();
+                showNotification('已清空所有记录！', 'success');
+            }
+        }
+
+        // 更新UI
+        function updateUI() {
+            updateParticipantsDisplay();
+            updateLotteryConfigDisplay();
+            updateRecordsDisplay();
+            updateDrawDisplay();
+        }
+
+        // 更新人员显示
+        function updateParticipantsDisplay() {
+            const grid = document.getElementById('participantsGrid');
+            const allowRepeat = document.getElementById('allowRepeat').checked;
+            
+            document.getElementById('totalParticipants').textContent = participants.length;
+            document.getElementById('availableParticipants').textContent = 
+                participants.filter(p => allowRepeat || !p.won).length;
+
+            if (participants.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">暂无人员，请添加抽奖人员</div>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = participants.map((p, index) => `
+                <div class="participant-card" style="${p.won ? 'opacity: 0.6; background: #fed7d7;' : ''}">
+                    <div class="participant-name">${p.name} ${p.won ? '🏆' : ''}</div>
+                    ${p.department ? `<div class="participant-info">部门: ${p.department}</div>` : ''}
+                    ${p.employeeId ? `<div class="participant-info">工号: ${p.employeeId}</div>` : ''}
+                    <div style="margin-top: 10px;">
+                        <button class="delete-btn" onclick="deleteParticipant(${index})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 更新抽奖配置显示
+        function updateLotteryConfigDisplay() {
+            const list = document.getElementById('lotteryConfigList');
+
+            if (lotteryConfigs.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎯</div>
+                        <div class="empty-state-text">暂无抽奖设置，请添加抽奖轮次</div>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = lotteryConfigs.map((config, index) => `
+                <div class="lottery-config-item ${config.completed ? 'completed' : ''}">
+                    <div class="config-item-header">
+                        <div class="config-item-title">
+                            ${config.title}${config.level ? ' - ' + config.level : ''}
+                        </div>
+                        <div>
+                            <span class="badge ${config.completed ? 'badge-success' : 'badge-warning'}">
+                                ${config.completed ? '已完成' : '待抽奖'}
+                            </span>
+                        </div>
+                    </div>
+                    ${config.prize ? `<div style="margin: 5px 0; color: #e53e3e; font-weight: 600;">🎁 ${config.prize}</div>` : ''}
+                    <div style="margin: 5px 0; color: #4299e1;">👥 中奖人数: ${config.count}人</div>
+                    ${config.remark ? `<div style="margin: 5px 0; color: #718096;">📝 ${config.remark}</div>` : ''}
+                    ${config.completed && config.winners ? `
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(72, 187, 120, 0.1); border-radius: 8px;">
+                            <div style="font-weight: 600; margin-bottom: 8px;">🎉 中奖名单:</div>
+                            <div>
+                                ${config.winners.map(w => `
+                                    <span class="winner-detail">
+                                        ${w.name}${w.employeeId ? ' (工号: ' + w.employeeId + ')' : ''}${w.department ? ' - ' + w.department : ''}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div style="margin-top: 15px;">
+                        <button class="edit-btn" onclick="openLotteryConfigModal(${index})">编辑</button>
+                        <button class="delete-btn" onclick="deleteLotteryConfig(${index})">删除</button>
+                        ${!config.completed ? 
+                            `<button class="btn btn-primary" onclick="switchToLottery(${index})" style="margin-left: 5px; padding: 5px 15px; font-size: 0.9rem;">开始抽奖</button>` : 
+                            ''
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 更新记录显示
+        function updateRecordsDisplay() {
+            const container = document.getElementById('recordsList');
+
+            if (lotteryRecords.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <div class="empty-state-text">暂无抽奖记录</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>标题</th>
+                                <th>等级</th>
+                                <th>奖品</th>
+                                <th>人数</th>
+                                <th>中奖名单</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${lotteryRecords.map(record => `
+                                <tr>
+                                    <td>${new Date(record.timestamp).toLocaleString('zh-CN')}</td>
+                                    <td>${record.title}</td>
+                                    <td>${record.level || '-'}</td>
+                                    <td>${record.prize || '-'}</td>
+                                    <td>${record.count}</td>
+                                    <td>${record.winners.map(w => 
+                                        `${w.name}${w.employeeId ? '(工号:' + w.employeeId + ')' : ''}`
+                                    ).join(', ')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 模态框操作
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // 通知提示
+        function showNotification(message, type = 'info') {
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                background: ${type === 'success' ? 'var(--success-color)' : 
+                             type === 'error' ? 'var(--danger-color)' : 
+                             type === 'warning' ? 'var(--warning-color)' : 
+                             'var(--info-color)'};
+                color: white;
+                border-radius: 10px;
+                box-shadow: var(--shadow-lg);
+                z-index: 10000;
+                animation: slideInRight 0.3s ease;
+                font-weight: 600;
+            `;
+            notification.textContent = message;
+
+            // 添加动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            document.body.appendChild(notification);
+
+            // 3秒后自动消失
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // 数据持久化
+        function saveData() {
+            localStorage.setItem('lotteryParticipants', JSON.stringify(participants));
+            localStorage.setItem('lotteryConfigs', JSON.stringify(lotteryConfigs));
+            localStorage.setItem('lotteryRecords', JSON.stringify(lotteryRecords));
+            localStorage.setItem('allowRepeat', document.getElementById('allowRepeat').checked);
+            localStorage.setItem('drawDuration', drawDuration);
+        }
+
+        function loadData() {
+            const savedParticipants = localStorage.getItem('lotteryParticipants');
+            const savedConfigs = localStorage.getItem('lotteryConfigs');
+            const savedRecords = localStorage.getItem('lotteryRecords');
+            const savedAllowRepeat = localStorage.getItem('allowRepeat');
+            const savedDrawDuration = localStorage.getItem('drawDuration');
+
+            if (savedParticipants) {
+                participants = JSON.parse(savedParticipants);
+            }
+
+            if (savedConfigs) {
+                lotteryConfigs = JSON.parse(savedConfigs);
+            }
+
+            if (savedRecords) {
+                lotteryRecords = JSON.parse(savedRecords);
+            }
+
+            if (savedAllowRepeat !== null) {
+                document.getElementById('allowRepeat').checked = savedAllowRepeat === 'true';
+            }
+
+            if (savedDrawDuration) {
+                drawDuration = parseFloat(savedDrawDuration);
+            }
+        }
+
+        function saveSettings() {
+            saveData();
+            updateUI();
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
